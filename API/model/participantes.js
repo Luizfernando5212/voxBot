@@ -5,7 +5,7 @@ var ParticipanteSchema = new Schema(
     {
         pessoa: { type: Schema.Types.ObjectId, ref: 'Pessoa', required: true },
         reuniao: { type: Schema.Types.ObjectId, ref: 'Reuniao', required: true },
-        presente: { type: Boolean, required: true, default: false },
+        conviteAaceito: { type: Boolean, required: true, default: false },
         justificativa: { type: String, required: false }
     },
     {
