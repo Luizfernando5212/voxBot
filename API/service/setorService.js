@@ -11,7 +11,8 @@ module.exports = {
     },
     async read(req, res) {
         try {
-            const setores = await Setor.find();
+            const filter = req.query;
+            const setores = await Setor.find(filter);
             return res.status(200).json(setores);
         } catch (err) {
             return res.status(400).json({ error: 'Error fetching Setores' });

@@ -11,7 +11,8 @@ module.exports = {
     },
     async read(req, res) {
         try {
-            const empresas = await Empresa.find();
+            const filter = req.query;
+            const empresas = await Empresa.find(filter);
             return res.status(200).json(empresas);
         } catch (err) {
             return res.status(400).json({ error: 'Error fetching Empresas' });

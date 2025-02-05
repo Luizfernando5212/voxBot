@@ -22,7 +22,8 @@ module.exports = {
     },
     async read(req, res) {
         try {
-            const pessoas = await Pessoa.find();
+            const filter = req.query;
+            const pessoas = await Pessoa.find(filter);
             return res.status(200).json(pessoas);
         } catch (err) {
             return res.status(400).json({ error: 'Error fetching Pessoas' });
