@@ -17,6 +17,7 @@ module.exports = {
 
             return res.status(201).json(pessoa);
         } catch (err) {
+            console.log(err);
             return res.status(400).json({ error: 'Error creating new Pessoa' });
         }
     },
