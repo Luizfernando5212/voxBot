@@ -34,38 +34,44 @@ export default {
 
     async webHook(req, res) {
         const body = req.body.entry[0];
-        if(body.changes[0].field !== 'messages'){
+        if (body.changes[0].field !== 'messages') {
             // not from the messages webhook so dont process
-            return res.status(400).json({boddy: body});
+            return res.status(400).json({ boddy: body });
         };
 
-        const message = body.changes[0].value.messages[0] || null;
+        try {
+            const message = body.changes[0].value.messages[0] || null;
 
-        if(message === null){
-            return res.status(400).json({body: body});
-        } else {
 
-            const consulta = await numero.find({"numero": message.from})
-                .populate({
-                    path: 'pessoa',
-                    select: 'nome setor',
-                    populate: {
-                        path: 'setor',
-                        populate: { path: 'empresa', select: 'status'  }
-                    }
-                });
-            
-            if(consulta.length === 0){
-                const message = "Olá, você ainda não está cadastrado em nosso sistema, por favor, entre em contato com o administrador do sistema para mais informações.";
-                await axios(textMessage(message.from, message));
-            } else if (consulta[0].pessoa.setor.empresa.status === 'I'){
-                // send message to user
-                const message = "Olá, a empresa a qual você pertence está inadimplente, por favor, entre em contato com o administrador do sistema para mais informações.";
-                await axios(textMessage(message.from, message));
+            if (message === null) {
+                return res.status(400).json({ body: body });
             } else {
-                await mensagem(consulta, message.from, message.body, res);
 
+                const consulta = await numero.find({ "numero": message.from })
+                    .populate({
+                        path: 'pessoa',
+                        select: 'nome setor',
+                        populate: {
+                            path: 'setor',
+                            populate: { path: 'empresa', select: 'status' }
+                        }
+                    });
+
+                if (consulta.length === 0) {
+                    const message = "Olá, você ainda não está cadastrado em nosso sistema, por favor, entre em contato com o administrador do sistema para mais informações.";
+                    await axios(textMessage(message.from, message));
+                } else if (consulta[0].pessoa.setor.empresa.status === 'I') {
+                    // send message to user
+                    const message = "Olá, a empresa a qual você pertence está inadimplente, por favor, entre em contato com o administrador do sistema para mais informações.";
+                    await axios(textMessage(message.from, message));
+                } else {
+                    await mensagem(consulta, message.from, message.body, res);
+
+                }
             }
+        } catch (err) {
+            console.log(err)
+            return res.status(400).json({ error: err });
         }
     }
 
