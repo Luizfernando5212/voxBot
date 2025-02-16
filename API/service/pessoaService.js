@@ -17,8 +17,7 @@ module.exports = {
 
             return res.status(201).json(pessoa);
         } catch (err) {
-            console.log(err);
-            return res.status(400).json({ error: 'Error creating new Pessoa' });
+            return res.status(400).json({ error: 'Error creating new Pessoa' + err});
         }
     },
     async read(req, res) {
@@ -27,7 +26,7 @@ module.exports = {
             const pessoas = await Pessoa.find(filter);
             return res.status(200).json(pessoas);
         } catch (err) {
-            return res.status(400).json({ error: 'Error fetching Pessoas' });
+            return res.status(400).json({ error: 'Error fetching Pessoas' + err });
         }
     },
     async readOne(req, res) {
@@ -35,7 +34,7 @@ module.exports = {
             const pessoa = await Pessoa.findById(req.params.id);
             return res.status(200).json(pessoa);
         } catch (err) {
-            return res.status(400).json({ error: 'Error fetching Pessoa' });
+            return res.status(400).json({ error: 'Error fetching Pessoa' + err });
         }
     },
     async update(req, res) {
@@ -43,7 +42,7 @@ module.exports = {
             const pessoa = await Pessoa.findByIdAndUpdate(req.params.id, req.body, { new: true });
             return res.status(200).json(pessoa);
         } catch (err) {
-            return res.status(400).json({ error: 'Error updating Pessoa' });
+            return res.status(400).json({ error: 'Error updating Pessoa' + err });
         }
     },
     async delete(req, res) {
@@ -51,7 +50,7 @@ module.exports = {
             await Pessoa.findByIdAndDelete(req.params.id);
             return res.status(204).send();
         } catch (err) {
-            return res.status(400).json({ error: 'Error deleting Pessoa' });
+            return res.status(400).json({ error: 'Error deleting Pessoa' + err });
         }
     }
 };
