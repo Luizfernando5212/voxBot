@@ -10,6 +10,7 @@ exports.mensagemTexto = async (numeroTel, mensagem, res) => {
     try {
         await axios(request.textMessage(numeroTel, resposta + ' Reunião agendada com sucesso'))
     } catch (err) {
+        console.log(err)
         res.status(400).json({ error: 'Error sending message' + err });
     }
     
