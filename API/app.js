@@ -4,6 +4,7 @@ var cookieParser = require('cookie-parser');
 var cors = require('cors');
 var bodyParser = require('body-parser');
 
+const API = '/api';
 
 const conn = require('./connection/db');
 
@@ -14,6 +15,7 @@ var pessoaRouter = require('./routes/pessoa');
 var telefoneRouter = require('./routes/telefone');
 var mensagemRouter = require('./routes/mensagem');
 var reuniaoRouter = require('./routes/reuniao');
+var chatRouter = require('./routes/reuniao');
 
 var app = express();
 const PORT = process.env.PORT || 3000
@@ -30,12 +32,13 @@ app.use(bodyParser.json())
 app.use(express.static('images'));
 
 // Routers
-app.use('/empresa', empresaRouter);
-app.use('/setor', setorRouter);
-app.use('/pessoa', pessoaRouter);
-app.use('/telefone', telefoneRouter);
-app.use('/mensagem', mensagemRouter);
-app.use('/reuniao', reuniaoRouter);
+app.use(API + '/empresa', empresaRouter);
+app.use(API + '/setor', setorRouter);
+app.use(API + '/pessoa', pessoaRouter);
+app.use(API + '/telefone', telefoneRouter);
+app.use(API + '/mensagem', mensagemRouter);
+app.use(API + '/reuniao', reuniaoRouter);
+app.use(API + '/chat', chatRouter);
 
 conn().then(()=> {
     app.listen(PORT, () => {
