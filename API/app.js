@@ -15,7 +15,7 @@ var pessoaRouter = require('./routes/pessoa');
 var telefoneRouter = require('./routes/telefone');
 var mensagemRouter = require('./routes/mensagem');
 var reuniaoRouter = require('./routes/reuniao');
-var chatRouter = require('./routes/reuniao');
+var chatRouter = require('./routes/chat');
 
 var app = express();
 const PORT = process.env.PORT || 3000
@@ -42,7 +42,7 @@ app.use(API + '/chat', chatRouter);
 
 conn().then(()=> {
     app.listen(PORT, () => {
-        console.log('listening for requests')
+        console.log('listening for requests: ' + PORT)
     })
 })
 
