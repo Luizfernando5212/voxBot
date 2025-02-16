@@ -3,10 +3,14 @@ const Reuniao = require('../model/reuniao');
 module.exports = {
     async create(req, res) {
         try {
-            const reuniao = await Reuniao.create(req.body);
+            const reuniaoCriada = await Reuniao.create(req.body);
+            const reuniao = await Reuniao.findById(reuniaoCriada._id).populate({
+                path: 'organizador',
+                select: 'nome email matricula'
+            });
             return res.status(201).json(reuniao);
         } catch (err) {
-            return res.status(400).json({ error: 'Error creating new Reuniao' });
+            return res.status(400).json({ error: 'Error creating new Reuniao ' + err });
         }
     },
     async read(req, res) {
