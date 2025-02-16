@@ -67,7 +67,7 @@ module.exports = {
                 await mensagem.mensagem(message, res);
 
             }
-            return res.status(200).json({message: message});
+            // return res.status(200).json({message: message});
         }
     }
 
