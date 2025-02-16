@@ -1,6 +1,7 @@
-const router = require('express').Router;
+import { Router } from 'express';
+import participantesController from '../service/participantesService.js';
 
-const participantesController = require('../service/participantesService');
+const router = Router();
 
 /* GET users listing. */
 
@@ -9,3 +10,5 @@ router.get('/', participantesController.read);
 router.get('/:id', participantesController.readOne);
 router.put('/:id', participantesController.update);
 router.delete('/:id', participantesController.delete);
+
+export default router;

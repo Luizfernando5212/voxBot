@@ -1,7 +1,7 @@
-const Pessoa = require('../model/pessoa');
-const Telefone = require('../model/telefone');
+import Pessoa from '../model/pessoa.js';
+import Telefone from '../model/telefone.js';
 
-module.exports = {
+export default {
     async create(req, res) {
         try {
             const { telefones, ...dadosPessoa } = req.body;

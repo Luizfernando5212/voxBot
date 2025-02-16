@@ -1,6 +1,6 @@
-const Empresa = require('../model/empresa');
+import Empresa from '../model/empresa.js';
 
-module.exports = {
+export default {
     async create(req, res) {
         try {
             const empresa = await Empresa.create(req.body);

@@ -1,6 +1,6 @@
-const Reuniao = require('../model/reuniao');
+import Reuniao from '../model/reuniao.js';
 
-module.exports = {
+export default {
     async create(req, res) {
         try {
             const reuniaoCriada = await Reuniao.create(req.body);

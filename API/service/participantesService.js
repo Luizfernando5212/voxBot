@@ -1,6 +1,6 @@
-const Participantes = require('../model/participantes');
+import Participantes from '../model/participantes.js';
 
-module.exports = {
+export default {
     async create(req, res) {
         try {
             const participantes = await Participantes.create(req.body);

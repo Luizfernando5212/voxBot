@@ -1,12 +1,12 @@
-const text = require('./text/mensagemTexto');
-
+import text from './text/mensagemTexto.js';
 
 const redirecionar = {
-    text: async (objetoMensagem, res) => {
-        return await text.mensagemTexto(objetoMensagem.from, objetoMensagem.body, res);
+    text: async (consulta, objetoMensagem, res) => {
+        console.log(objetoMensagem)
+        return await text.mensagemTexto(consulta, objetoMensagem.from, objetoMensagem.body, res);
     }
 } 
 
-exports.mensagem = async (objeto, res) =>  {
-    return await redirecionar[objeto.type](objeto, res);
+exports.mensagem = async (consulta, objeto, res) =>  {
+    return await redirecionar[objeto.type](consulta, objeto, res);
 }

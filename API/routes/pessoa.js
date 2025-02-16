@@ -1,8 +1,7 @@
-const router = require('express').Router();
+import { Router } from 'express';
+import pessoaController from '../service/pessoaService.js';
 
-const pessoaController = require('../service/pessoaService');
-
-/* GET users listing. */
+const router = Router();
 
 router.post('/', pessoaController.create);
 router.get('/', pessoaController.read);
@@ -10,4 +9,4 @@ router.get('/:id', pessoaController.readOne);
 router.put('/:id', pessoaController.update);
 router.delete('/:id', pessoaController.delete);
 
-module.exports = router;
+export default router;

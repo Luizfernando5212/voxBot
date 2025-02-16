@@ -1,5 +1,4 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+import mongoose, { Schema } from 'mongoose';
 
 var MensagemSchema = new Schema(
     {
@@ -9,4 +8,4 @@ var MensagemSchema = new Schema(
     }
 );
 
-module.exports = mongoose.model('Mensagem', MensagemSchema);
+export default mongoose.model('Mensagem', MensagemSchema);

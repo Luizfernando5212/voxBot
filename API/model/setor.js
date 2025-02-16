@@ -1,7 +1,4 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-
-
+import mongoose, { Schema } from 'mongoose';
 
 var SetorSchema = new Schema(
     {
@@ -11,4 +8,4 @@ var SetorSchema = new Schema(
 );
 
 
-module.exports = mongoose.model('Setor', SetorSchema);
+export default mongoose.model('Setor', SetorSchema);

@@ -1,11 +1,12 @@
-require('dotenv').config();
-const axios = require("axios").default;
-const numero = require('../model/telefone');
-const request = require('../utll/requestBuilder');
-const mensagem = require('../bot/mensagem')
-const { path } = require('../app');
+import dotenv from 'dotenv';
+import axios from 'axios';
+import { textMessage } from '../utll/requestBuilder.js';
+import mensagem from '../bot/text/mensagemTexto.js';
+import numero from '../model/telefone.js';
 
-module.exports = {
+dotenv.config();
+
+export default {
     async getAccess(req, res) {
 
         const verify_token = process.env.VERIFY_TOKEN;
@@ -40,8 +41,6 @@ module.exports = {
 
         const message = body.changes[0].value.messages[0] || null;
 
-        console.log(body.changes[0].value)
-        console.log(message)
         if(message === null){
             return res.status(400).json({body: body});
         } else {
@@ -58,16 +57,15 @@ module.exports = {
             
             if(consulta.length === 0){
                 const message = "Olá, você ainda não está cadastrado em nosso sistema, por favor, entre em contato com o administrador do sistema para mais informações.";
-                await axios(request.textMessage(message.from, message));
+                await axios(textMessage(message.from, message));
             } else if (consulta[0].pessoa.setor.empresa.status === 'I'){
                 // send message to user
                 const message = "Olá, a empresa a qual você pertence está inadimplente, por favor, entre em contato com o administrador do sistema para mais informações.";
-                await axios(request.textMessage(message.from, message));
+                await axios(textMessage(message.from, message));
             } else {
-                await mensagem.mensagem(message, res);
+                await mensagem(consulta, message.from, message.body, res);
 
             }
-            // return res.status(200).json({message: message});
         }
     }
 

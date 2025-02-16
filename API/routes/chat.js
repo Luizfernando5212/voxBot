@@ -1,7 +1,9 @@
-const router = require('express').Router();
-const chatController = require('../service/chatService');
+import { Router } from 'express';
+import chatController from '../service/chatService.js';
+
+const router = Router();
 
 router.get('/', chatController.getAccess);
 router.post('/', chatController.webHook);
 
-module.exports = router;
+export default router;

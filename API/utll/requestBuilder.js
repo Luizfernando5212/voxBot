@@ -1,13 +1,18 @@
-require('dotenv').config();
-const facebook = require('./urls');
+import dotenv from 'dotenv';
+import { url } from './urls.js';
+
+dotenv.config();
+
+// require('dotenv').config();
+// const facebook = require('./urls');
 const token = process.env.WHATSAPP_TOKEN;
 const phoneNumber = process.env.PHONE_NUMBER_ID;
 
 
-exports.textMessage = (from, message) => {
+export const textMessage = (from, message) => {
     let body = {
         method: "POST",
-        url: facebook.url(phoneNumber),
+        url: url(phoneNumber),
         headers: {
             'Authorization': `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -17,7 +22,6 @@ exports.textMessage = (from, message) => {
             to: from,
             type: "text",
             text: {
-                preview_url: false,
                 body: message,
             },
         },
@@ -26,10 +30,10 @@ exports.textMessage = (from, message) => {
 
 }
 
-exports.fullMessage = (from, message, buttons, i) => {
+export const fullMessage = (from, message, buttons, i) => {
     let body = {
         method: "POST",
-        url: facebook.url(phoneNumber),
+        url: url(phoneNumber),
         headers: {
             Authorization: "Bearer " + token,
             "Content-Type": "application/json",
@@ -70,11 +74,11 @@ exports.fullMessage = (from, message, buttons, i) => {
 }
 
 
-exports.interactiveMessage = (from, message, buttons, i) => {
+export const interactiveMessage = (from, message, buttons, i) => {
     if (message instanceof Object) {
         let body = {
             method: "POST",
-            url: facebook.url(phoneNumber),
+            url: url(phoneNumber),
             headers: {
                 Authorization: "Bearer " + token,
                 "Content-Type": "application/json",
@@ -113,7 +117,7 @@ exports.interactiveMessage = (from, message, buttons, i) => {
     } else {
         let body = {
             method: "POST",
-            url: facebook.url(phoneNumber),
+            url: url(phoneNumber),
             headers: {
                 Authorization: "Bearer " + token,
                 "Content-Type": "application/json",
@@ -146,11 +150,11 @@ exports.interactiveMessage = (from, message, buttons, i) => {
     }
 }
 
-exports.interactiveListMessage = (from, message, buttons, name, i) => {
+export const interactiveListMessage = (from, message, buttons, name, i) => {
 
     let body = {
         method: "POST",
-        url: facebook.url(phoneNumber),
+        url: url(phoneNumber),
         headers: {
             Authorization: "Bearer " + token,
             "Content-Type": "application/json",
@@ -185,10 +189,10 @@ exports.interactiveListMessage = (from, message, buttons, name, i) => {
     return body;
 }
 
-exports.mediaMessage = (from, img) => {
+export const mediaMessage = (from, img) => {
     let body = {
         method: "POST",
-        url: facebook.url(phoneNumber),
+        url: url(phoneNumber),
         headers: {
             Authorization: "Bearer " + token,
             "Content-Type": "application/json",

@@ -1,7 +1,4 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-
-
+import mongoose, { Schema } from 'mongoose';
 
 var EmpresaSchema = new Schema(
     {
@@ -19,5 +16,4 @@ var EmpresaSchema = new Schema(
     }
 );
 
-
-module.exports = mongoose.model('Empresa', EmpresaSchema);
+export default mongoose.model('Empresa', EmpresaSchema);

@@ -1,6 +1,7 @@
-const router = require('express').Router();
+import { Router } from 'express';
+import empresaController from '../service/empresaService.js';
 
-const empresaController = require('../service/empresaService');
+const router = Router();
 
 /* GET users listing. */
 
@@ -10,4 +11,5 @@ router.get('/:id', empresaController.readOne);
 router.put('/:id', empresaController.update);
 router.delete('/:id', empresaController.delete);
 
-module.exports = router;
+
+export default router;

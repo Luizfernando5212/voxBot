@@ -1,7 +1,4 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-
-
+import mongoose, { Schema } from 'mongoose';
 
 var TelefoneSchema = new Schema(
     {
@@ -12,4 +9,4 @@ var TelefoneSchema = new Schema(
 );
 
 
-module.exports = mongoose.model('Telefone', TelefoneSchema);
+export default mongoose.model('Telefone', TelefoneSchema);

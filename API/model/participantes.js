@@ -1,5 +1,4 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+import mongoose, { Schema } from 'mongoose';
 
 var ParticipanteSchema = new Schema(
     {
@@ -15,4 +14,4 @@ var ParticipanteSchema = new Schema(
 
 ParticipanteSchema.index({ pessoa: 1, reuniao: 1 }, { unique: true });
 
-module.exports = mongoose.model('Participante', ParticipanteSchema);
+export default mongoose.model('Participante', ParticipanteSchema);

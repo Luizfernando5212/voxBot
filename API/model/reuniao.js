@@ -1,5 +1,4 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+import mongoose, { Schema } from 'mongoose';
 
 var ReuniaoSchema = new Schema(
     {
@@ -14,4 +13,4 @@ var ReuniaoSchema = new Schema(
     }
 );
 
-module.exports = mongoose.model('Reuniao', ReuniaoSchema);
+export default mongoose.model('Reuniao', ReuniaoSchema);

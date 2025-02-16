@@ -1,7 +1,4 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-
-
+import mongoose, { Schema } from 'mongoose';
 
 var PessoaSchema = new Schema(
     {
@@ -14,4 +11,4 @@ var PessoaSchema = new Schema(
 );
 
 
-module.exports = mongoose.model('Pessoa', PessoaSchema);
+export default mongoose.model('Pessoa', PessoaSchema);

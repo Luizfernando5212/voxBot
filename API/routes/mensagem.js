@@ -1,8 +1,7 @@
-const router = require('express').Router();
+import { Router } from 'express';
+import mensagemController from '../service/mensagemService.js';
 
-const mensagemController = require('../service/mensagemService');
-
-/* GET users listing. */
+const router = Router();
 
 router.post('/', mensagemController.create);
 router.get('/', mensagemController.read);
@@ -10,4 +9,4 @@ router.get('/:id', mensagemController.readOne);
 router.put('/:id', mensagemController.update);
 router.delete('/:id', mensagemController.delete);
 
-module.exports = router;
+export default router;

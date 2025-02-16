@@ -1,6 +1,6 @@
-const Telefone = require('../model/telefone');
+import Telefone from '../model/telefone.js';
 
-module.exports = {
+export default {
     async create(req, res) {
         try {
             const telefone = await Telefone.create(req.body);

@@ -1,21 +1,22 @@
-require('dotenv').config();
-var express = require('express');
-var cookieParser = require('cookie-parser');
-var cors = require('cors');
-var bodyParser = require('body-parser');
+import dotenv from 'dotenv';
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import bodyParser from 'body-parser';
 
 const API = '/api';
+dotenv.config();
 
-const conn = require('./connection/db');
+import conn from './connection/db.js';
+// const conn = require('./connection/db');
 
-
-var empresaRouter = require('./routes/empresa');
-var setorRouter = require('./routes/setor');
-var pessoaRouter = require('./routes/pessoa');
-var telefoneRouter = require('./routes/telefone');
-var mensagemRouter = require('./routes/mensagem');
-var reuniaoRouter = require('./routes/reuniao');
-var chatRouter = require('./routes/chat');
+import empresaRouter from './routes/empresa.js';
+import setorRouter from './routes/setor.js';
+import pessoaRouter from './routes/pessoa.js';
+import telefoneRouter from './routes/telefone.js';
+import mensagemRouter from './routes/mensagem.js';
+import reuniaoRouter from './routes/reuniao.js';
+import chatRouter from './routes/chat.js';
 
 var app = express();
 const PORT = process.env.PORT || 3000
@@ -47,4 +48,4 @@ conn().then(()=> {
 })
 
 
-module.exports = app;
+export default app;

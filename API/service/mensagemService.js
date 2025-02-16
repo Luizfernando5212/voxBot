@@ -1,6 +1,6 @@
-const Mensagem = require('../model/mensagem');
+import Mensagem from '../model/mensagem.js';
 
-module.exports = {
+export default {
     async create(req, res) {
         try {
             const mensagem = await Mensagem.create(req.body);

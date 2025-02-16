@@ -1,8 +1,7 @@
-const router = require('express').Router();
+import { Router } from 'express';
+import setorController from '../service/setorService.js';
 
-const setorController = require('../service/setorService');
-
-/* GET users listing. */
+const router = Router();
 
 router.post('/', setorController.create);
 router.get('/', setorController.read);
@@ -10,4 +9,4 @@ router.get('/:id', setorController.readOne);
 router.put('/:id', setorController.update);
 router.delete('/:id', setorController.delete);
 
-module.exports = router;
+export default router;

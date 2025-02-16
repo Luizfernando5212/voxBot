@@ -1,8 +1,7 @@
-const router = require('express').Router();
+import { Router } from 'express';
+import reuniaoController from '../service/reuniaoService.js';
 
-const reuniaoController = require('../service/reuniaoService');
-
-/* GET users listing. */
+const router = Router();
 
 router.post('/', reuniaoController.create);
 router.get('/', reuniaoController.read);
@@ -10,4 +9,4 @@ router.get('/:id', reuniaoController.readOne);
 router.put('/:id', reuniaoController.update);
 router.delete('/:id', reuniaoController.delete);
 
-module.exports = router;
+export default router;

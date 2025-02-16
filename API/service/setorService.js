@@ -1,6 +1,6 @@
-const Setor = require('../model/setor');
+import setor from '../model/setor.js';
 
-module.exports = {
+export default {
     async create(req, res) {
         try {
             const setor = await Setor.create(req.body);
