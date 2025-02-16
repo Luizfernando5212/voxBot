@@ -5,6 +5,9 @@ module.exports = {
 
         const verify_token = process.env.VERIFY_TOKEN;
 
+        console.log(req.query)
+        console.log(verify_token)
+
         // Parse params from the webhook verification request
         let mode = req.query["hub.mode"];
         let token = req.query["hub.verify_token"];
