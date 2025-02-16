@@ -15,7 +15,10 @@ export default {
     },
     async read(req, res) {
         try {
-            const reunioes = await Reuniao.find();
+            const reunioes = await Reuniao.find().populate({
+                path: 'organizador',
+                select: 'nome email matricula'
+            });;
             return res.status(200).json(reunioes);
         } catch (err) {
             return res.status(400).json({ error: 'Error fetching Reunioes' });
@@ -23,7 +26,10 @@ export default {
     },
     async readOne(req, res) {
         try {
-            const reuniao = await Reuniao.findById(req.params.id);
+            const reuniao = await Reuniao.findById(req.params.id).populate({
+                path: 'organizador',
+                select: 'nome email matricula'
+            });;
             return res.status(200).json(reuniao);
         } catch (err) {
             return res.status(400).json({ error: 'Error fetching Reuniao' });
