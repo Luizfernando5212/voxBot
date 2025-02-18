@@ -50,7 +50,6 @@ async function estruturaMensagemTexto(texto) {
             let msg = 'Não identificamos algunas informações na sua mensagem. Por favor, informe: ';
             const camposObrigatorios = new Set(['titulo', 'dataHoraInicio', 'dataHoraFim', 'participantes']);
             Object.entries(resultado).forEach(([key, value]) => {
-                console.log(key, value);
                 if (camposObrigatorios.has(key) && (value == null || value === '' || value.length === 0)) {
                     msg += key  + ', ';
                 }
