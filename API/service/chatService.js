@@ -33,8 +33,8 @@ export default {
 
     async webHook(req, res) {
         const body = req.body.entry[0];
-        console.log(req.body);
-        if (body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.timestamp > Date.now() / 1000 - 10) {
+        console.log(req.body.entru);
+        if (body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.timestamp < Date.now() / 1000 - 10) {
             console.log('ignoring webhook, mensagem antiga');
             return res.status(200).json({ message: 'ok' });
         }
