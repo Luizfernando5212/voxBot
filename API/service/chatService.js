@@ -39,6 +39,9 @@ export default {
         } else {
             console.log(body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.timestamp);
             console.log(body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]);
+            console.log(body?.entry?.[0]?.changes?.[0]?.value?.messages);
+            console.log(body?.entry?.[0]?.changes?.[0]?.value);
+            console.log(body?.entry?.[0]?.changes?.[0]);
             if (body.changes[0] && body.changes[0].field !== 'messages') {
                 // not from the messages webhook so dont process
                 return res.status(400).json({ boddy: body });
