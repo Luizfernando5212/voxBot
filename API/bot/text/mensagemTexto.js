@@ -68,7 +68,7 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
     const respostaString = JSON.stringify(resposta); 
     try {
         await agendaReuniao(consulta, resposta, res);
-        // await axios(textMessage(numeroTel, respostaString))
+        await axios(textMessage(numeroTel, respostaString))
         // res.status(200).json({ message: 'Message sent successfully' });
     } catch (err) {
         console.log(err);
