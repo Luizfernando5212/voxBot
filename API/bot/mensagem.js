@@ -2,7 +2,6 @@ import text from './text/mensagemTexto.js';
 
 const redirecionar = {
     text: async (consulta, objetoMensagem, res) => {
-        console.log(objetoMensagem)
         return await text(consulta, objetoMensagem.from, objetoMensagem.text.body, res);
     }
 } 

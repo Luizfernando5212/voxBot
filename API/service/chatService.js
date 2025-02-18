@@ -21,7 +21,6 @@ export default {
             // Check the mode and token sent are correct
             if (mode === "subscribe" && token === verify_token) {
                 // Respond with 200 OK and challenge token from the request
-                console.log("WEBHOOK_VERIFIED");
                 res.status(200).send(challenge);
             } else {
                 // Responds with '403 Forbidden' if verify tokens do not match
@@ -34,7 +33,7 @@ export default {
 
     async webHook(req, res) {
         const body = req.body.entry[0];
-        if (body.changes[0].field !== 'messages') {
+        if (body.changes[0] && body.changes[0].field !== 'messages') {
             // not from the messages webhook so dont process
             return res.status(400).json({ boddy: body });
         };
@@ -50,7 +49,7 @@ export default {
                 const consulta = await numero.find({ "numero": message.from })
                     .populate({
                         path: 'pessoa',
-                        select: 'nome setor',
+                        select: 'nome setor _id',
                         populate: {
                             path: 'setor',
                             populate: { path: 'empresa', select: 'status' }

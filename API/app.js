@@ -16,6 +16,7 @@ import pessoaRouter from './routes/pessoa.js';
 import telefoneRouter from './routes/telefone.js';
 import mensagemRouter from './routes/mensagem.js';
 import reuniaoRouter from './routes/reuniao.js';
+import participantesRouter from './routes/participantes.js';
 import chatRouter from './routes/chat.js';
 
 var app = express();
@@ -39,6 +40,7 @@ app.use(API + '/pessoa', pessoaRouter);
 app.use(API + '/telefone', telefoneRouter);
 app.use(API + '/mensagem', mensagemRouter);
 app.use(API + '/reuniao', reuniaoRouter);
+app.use(API + '/participantes', participantesRouter);
 app.use(API + '/chat', chatRouter);
 
 conn().then(()=> {

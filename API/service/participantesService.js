@@ -40,5 +40,13 @@ export default {
         } catch (err) {
             return res.status(400).json({ error: 'Error deleting Participantes' });
         }
+    },
+    async deleteAll(req, res) {
+        try {
+            await Participantes.deleteMany();
+            return res.status(204).send();
+        } catch (err) {
+            return res.status(400).json({ error: 'Error deleting Participantes' });
+        }
     }
 };

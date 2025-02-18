@@ -1,5 +1,5 @@
 export const url = (numberId) => {
 
-    return "https://graph.facebook.com/v21.0/" +
-    numberId + "/messages/";
+    return "https://graph.facebook.com/v22.0/" +
+    numberId + "/messages";
 }

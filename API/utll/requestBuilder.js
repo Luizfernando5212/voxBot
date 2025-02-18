@@ -58,7 +58,6 @@ export const fullMessage = (from, message, buttons, i) => {
                 action: {
                     button: "botoes",
                     rows: buttons.map((name, index) => {
-                        console.log(index)
                         return  {
                                 id: index + i,
                                 title: name,

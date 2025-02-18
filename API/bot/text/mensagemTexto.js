@@ -4,6 +4,7 @@ import { zodResponseFormat } from 'openai/helpers/zod';
 import OpenAI from 'openai';
 import z from 'zod';
 import dotenv from 'dotenv';
+import agendaReuniao from "../operacoes/agendaReuniao.js";
 
 dotenv.config();
 
@@ -30,19 +31,20 @@ const Evento = z.object({
 
 async function estruturaMensagemTexto(texto) {
     try {
-
         let responseFormat = zodResponseFormat(Evento, 'evento');
         const reuniao = await openai.beta.chat.completions.parse({
             model: 'gpt-4o-mini-2024-07-18',
             messages: [
-                { role: 'system', content: 'Extraia as informações do evento/reunião. Caso não haja informações o suficiente, preencha apenas o campo isDentroTema com false' },
+                { role: 'system', content: 'Extraia as informações do evento/reunião, hoje é dia ' + new Date() + '. Caso não haja informações o suficiente, preencha apenas o campo isDentroTema com false' },
                 { role: 'user', content: texto },
             ],
             response_format: responseFormat,
         });
         let resultado = reuniao.choices[0].message.parsed;
-        console.log(resultado);
         if (resultado.isDentroTema) {
+            if (resultado.setor === '') {
+                resultado.setor = null;
+            }
             return resultado;
         } else {
             let msg = 'Não identificamos algunas informações na sua mensagem. Por favor, informe: ';
@@ -62,11 +64,14 @@ async function estruturaMensagemTexto(texto) {
 }
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
-    const resposta = estruturaMensagemTexto(mensagem)
+    const resposta =  await estruturaMensagemTexto(mensagem);
+    const respostaString = JSON.stringify(resposta); 
     try {
-        await axios(textMessage(numeroTel, resposta))
-        res.status(200).json({ message: 'Message sent successfully' });
+        await agendaReuniao(consulta, resposta, res);
+        await axios(textMessage(numeroTel, respostaString))
+        // res.status(200).json({ message: 'Message sent successfully' });
     } catch (err) {
+        console.log(err);
         res.status(400).json({ error: 'Error sending message' + err });
     }
 
