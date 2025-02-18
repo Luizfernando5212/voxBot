@@ -39,6 +39,7 @@ export default {
         };
 
         try {
+            console.log(body)
             const message = body.changes[0].value.messages[0] || null;
 
 
