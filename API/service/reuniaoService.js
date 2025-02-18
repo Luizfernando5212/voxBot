@@ -1,4 +1,5 @@
 import Reuniao from '../model/reuniao.js';
+import Participantes from '../model/participantes.js';
 
 export default {
     async create(req, res) {
@@ -30,7 +31,25 @@ export default {
                 path: 'organizador',
                 select: 'nome email matricula'
             });;
-            return res.status(200).json(reuniao);
+
+            if (!reuniao) {
+                return res.status(404).json({ error: 'Reunião não encontrada' });
+            } else {
+    
+                // Buscar participantes relacionados à reunião
+                const participantes = await Participantes.find({ reuniao: reuniao._id })
+                    .populate({ path: 'pessoa', select: 'nome' });
+        
+                // Extrair apenas os nomes dos participantes
+                const listaParticipantes = participantes.map(p => p.pessoa.nome);
+        
+                return res.status(200).json({
+                    ...reuniao.toObject(),
+                    participantes: listaParticipantes
+                });
+                
+                return res.status(200).json(reuniao);
+            }
         } catch (err) {
             return res.status(400).json({ error: 'Error fetching Reuniao' });
         }
