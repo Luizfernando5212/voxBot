@@ -33,18 +33,11 @@ export default {
 
     async webHook(req, res) {
         const body = req.body.entry[0];
-        console.log(body?.changes?.[0]?.value?.messages?.[0]);
-        console.log(body?.changes?.[0]?.value?.messages?.[0]?.timestamp < Date.now());
         if (body?.changes?.[0]?.value?.messages?.[0]?.timestamp < Date.now() / 1000 - 10 || 
            !body?.changes?.[0]?.value?.messages?.[0]) {
             console.log('ignoring webhook, mensagem antiga');
             return res.status(200).json({ message: 'ok' });
         } else {
-            console.log(body?.changes?.[0]?.value?.messages?.[0]?.timestamp);
-            console.log(body?.changes?.[0]?.value?.messages?.[0]);
-            console.log(body?.changes?.[0]?.value?.messages);
-            console.log(body?.changes?.[0]?.value);
-            console.log(body?.changes?.[0]);
             if (body.changes[0] && body.changes[0].field !== 'messages') {
                 // not from the messages webhook so dont process
                 return res.status(400).json({ boddy: body });
