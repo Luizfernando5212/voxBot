@@ -56,7 +56,9 @@ export default {
                             populate: { path: 'empresa', select: 'status' }
                         }
                     });
-
+                console.log(message)
+                console.log(message.from)
+                console.log(message.body);
                 if (consulta.length === 0) {
                     const message = "Olá, você ainda não está cadastrado em nosso sistema, por favor, entre em contato com o administrador do sistema para mais informações.";
                     await axios(textMessage(message.from, message));
