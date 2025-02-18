@@ -77,7 +77,7 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
             res.status(400).json({ error: 'Error sending message' + err });
         }
     } else {
-        await axios(textMessage(numeroTel, respostaString));
+        await axios(textMessage(numeroTel, resposta));
     }
     
     
