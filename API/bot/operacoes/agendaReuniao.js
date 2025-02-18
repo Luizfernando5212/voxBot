@@ -10,10 +10,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
     console.log(objReuniao);
     objReuniao.organizador = consulta[0].pessoa._id;
 
-    console.log(objReuniao);
     const novaReuniao = await Reuniao.create(objReuniao);
-    const reuniaoSalva = await Reuniao.findById(novaReuniao._id);
-    console.log('Reunião salva no banco:', reuniaoSalva);
 
     const participantes = objReuniao.participantes;
 
@@ -54,7 +51,15 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 // Enviar mensagem para o usuário informando que não foi encontrado
             }
         }
+        const novoParticipante = {
+            pessoa: consulta[0].pessoa._id,
+            reuniao: novaReuniao._id,
+            conviteAceito: true
+        }
 
+        const participateDoc = new Participantes(novoParticipante);
+        await participateDoc.save();
+        await axios(textMessage(consulta[0].numero, 'Reunião agendada com sucesso!'));
         return res.status(200).json({ message: 'Reunião agendada com sucesso!' });
     } catch (error) {
         console.log(error);
