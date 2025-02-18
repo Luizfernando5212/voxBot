@@ -10,7 +10,6 @@ const phoneNumber = process.env.PHONE_NUMBER_ID;
 
 
 export const textMessage = (from, message) => {
-    console.log('from', from);
     let body = {
         method: "POST",
         url: url(phoneNumber),

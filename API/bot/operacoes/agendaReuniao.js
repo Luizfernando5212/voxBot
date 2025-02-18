@@ -7,7 +7,6 @@ import axios from 'axios';
 import mongoose from 'mongoose';
 
 const agendaReuniao = async (consulta, objReuniao, res) => {
-    console.log(objReuniao)
     objReuniao.organizador = consulta[0]._id;
     const novaReuniao = await Reuniao.create(objReuniao);
     const participantes = objReuniao.participantes;
@@ -41,7 +40,6 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 const participateDoc = new Participantes(novoParticipante);
                 await participateDoc.save();
                 const mensagem = `Olá ${participante[0].nome}, você foi convidado para a reunião ${novaReuniao.titulo} no dia ${novaReuniao.dataHoraInicio}.`;
-                console.log('Enviando mensagem para:', telefone.numero);
                 await axios(textMessage(telefone.numero, mensagem));
             } else if (participante.length > 1) {
                 // Enviar lista de pessoas com o mesmo nome para o usuário escolher
@@ -49,6 +47,14 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 // Enviar mensagem para o usuário informando que não foi encontrado
             }
         }
+
+        const novoParticipante = {
+            pessoa: consulta[0].pessoa._id,
+            reuniao: novaReuniao._id,
+            conviteAceito: true
+        }
+        await Participantes.create(novoParticipante);
+        await axios(textMessage(consulta[0].numero, `Reunião agendada com sucesso!`));
 
         return res.status(200).json({ message: 'Reunião agendada com sucesso!' });
     } catch (error) {
