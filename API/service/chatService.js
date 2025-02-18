@@ -37,6 +37,8 @@ export default {
             console.log('ignoring webhook, mensagem antiga');
             return res.status(200).json({ message: 'ok' });
         } else {
+            console.log(body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.timestamp);
+            console.log(body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]);
             if (body.changes[0] && body.changes[0].field !== 'messages') {
                 // not from the messages webhook so dont process
                 return res.status(400).json({ boddy: body });
