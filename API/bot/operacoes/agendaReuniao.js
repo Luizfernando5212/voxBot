@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 
 const agendaReuniao = async (consulta, objReuniao, res) => {
     console.log(objReuniao);
-    objReuniao.organizador = consulta[0]._id;
+    objReuniao.organizador = consulta[0].pessoa._id;
 
     console.log(objReuniao);
     const novaReuniao = await Reuniao.create(objReuniao);
