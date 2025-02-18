@@ -8,5 +8,6 @@ router.get('/', reuniaoController.read);
 router.get('/:id', reuniaoController.readOne);
 router.put('/:id', reuniaoController.update);
 router.delete('/:id', reuniaoController.delete);
+router.delete('/', reuniaoController.deleteAll);
 
 export default router;

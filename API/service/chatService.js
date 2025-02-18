@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import axios from 'axios';
 import { textMessage } from '../utll/requestBuilder.js';
-import mensagem from '../bot/text/mensagemTexto.js';
+import mensagem from '../bot/mensagem.js';
 import numero from '../model/telefone.js';
 
 dotenv.config();
@@ -64,7 +64,7 @@ export default {
                     const message = "Olá, a empresa a qual você pertence está inadimplente, por favor, entre em contato com o administrador do sistema para mais informações.";
                     await axios(textMessage(message.from, message));
                 } else {
-                    await mensagem(consulta, message.from, message.text, res);
+                    await mensagem(consulta, message, res);
 
                 }
             }

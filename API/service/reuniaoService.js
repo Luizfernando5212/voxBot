@@ -52,5 +52,14 @@ export default {
         catch (err) {
             return res.status(400).json({ error: 'Error deleting Reuniao' });
         }
+    },
+    async deleteAll(req, res) {
+        try {
+            await Reuniao.deleteMany();
+            return res.status(200).json({ message: 'All Reunioes deleted' });
+        }
+        catch (err) {
+            return res.status(400).json({ error: 'Error deleting Reunioes' });
+        }
     }
 };
