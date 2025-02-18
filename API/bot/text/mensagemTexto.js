@@ -35,7 +35,7 @@ async function estruturaMensagemTexto(texto) {
         const reuniao = await openai.beta.chat.completions.parse({
             model: 'gpt-4o-mini-2024-07-18',
             messages: [
-                { role: 'system', content: 'Extraia as informações do evento/reunião, hoje é dia ' + new Date() + '. Caso não haja informações o suficiente, preencha apenas o campo isDentroTema com false' },
+                { role: 'system', content: 'Extraia as informações do evento/reunião, não produza informações, hoje é dia ' + new Date() + '. Caso não haja informações o suficiente, preencha apenas o campo isDentroTema com false' },
                 { role: 'user', content: texto },
             ],
             response_format: responseFormat,
@@ -54,7 +54,7 @@ async function estruturaMensagemTexto(texto) {
                     msg += key  + ', ';
                 }
             });    
-
+            
             return msg;
         }
     } catch (err) {
@@ -65,15 +65,22 @@ async function estruturaMensagemTexto(texto) {
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
     const resposta =  await estruturaMensagemTexto(mensagem);
-    const respostaString = JSON.stringify(resposta); 
-    try {
-        await agendaReuniao(consulta, resposta, res);
-        await axios(textMessage(numeroTel, respostaString))
-        // res.status(200).json({ message: 'Message sent successfully' });
-    } catch (err) {
-        console.log(err);
-        res.status(400).json({ error: 'Error sending message' + err });
+    if (typeof resposta === "object" && resposta !== null) {
+        console.log("É um objeto");
+        const respostaString = JSON.stringify(resposta); 
+        try {
+            await agendaReuniao(consulta, resposta, res);
+            await axios(textMessage(numeroTel, respostaString))
+            // res.status(200).json({ message: 'Message sent successfully' });
+        } catch (err) {
+            console.log(err);
+            res.status(400).json({ error: 'Error sending message' + err });
+        }
+    } else {
+        await axios(textMessage(numeroTel, respostaString));
     }
+    
+    
 
 }
 
