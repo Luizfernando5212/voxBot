@@ -41,6 +41,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 const participateDoc = new Participantes(novoParticipante);
                 await participateDoc.save();
                 const mensagem = `Olá ${participante[0].nome}, você foi convidado para a reunião ${novaReuniao.titulo} no dia ${novaReuniao.dataHoraInicio}.`;
+                console.log('Enviando mensagem para:', telefone.numero);
                 await axios(textMessage(telefone.numero, mensagem));
             } else if (participante.length > 1) {
                 // Enviar lista de pessoas com o mesmo nome para o usuário escolher
