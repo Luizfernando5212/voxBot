@@ -7,8 +7,10 @@ import axios from 'axios';
 import mongoose from 'mongoose';
 
 const agendaReuniao = async (consulta, objReuniao, res) => {
-    console.log(objReuniao)
+    console.log(objReuniao);
     objReuniao.organizador = consulta[0]._id;
+
+    console.log(oobjReuniao);
     const novaReuniao = await Reuniao.create(objReuniao);
     const participantes = objReuniao.participantes;
 
