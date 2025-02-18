@@ -12,6 +12,9 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
 
     console.log(objReuniao);
     const novaReuniao = await Reuniao.create(objReuniao);
+    const reuniaoSalva = await Reuniao.findById(novaReuniao._id);
+    console.log('Reunião salva no banco:', reuniaoSalva);
+
     const participantes = objReuniao.participantes;
 
     try {
