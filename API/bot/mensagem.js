@@ -9,5 +9,6 @@ const redirecionar = {
 const mensagem = async (consulta, objeto, res) =>  {
     return await redirecionar[objeto.type](consulta, objeto, res);
 }
+/* testando branch */
 
 export default mensagem;
