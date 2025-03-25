@@ -213,19 +213,17 @@ export const mediaMessage = (from, img) => {
 /**
  * Função que monta o corpo da mensagem de template
  * 
- * @param {number} from - numero de telefone 
- * @typedef {Object} template - template
- * @property {string} name - nome do template
- * @property {Object} components - componentes do template
+ * @param {number} from - numero de telefone para quem será enviado a mensagem
+ * @typedef {Object} template - template da mensagem
  * 
  * @returns - retorna o corpo da mensagem
  */
-const templateMessage = async (from, template) => {
+export const templateMessage = (from, template) => {
     let body = {
         method: "POST",
         url: url(phoneNumber),
         headers: {
-            Authorization: "Bearer " + token,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
         },
         data: {
@@ -233,13 +231,7 @@ const templateMessage = async (from, template) => {
             recipient_type: "individual",
             to: from,
             type: "template",
-            template: {
-                name: template.name,
-                languague: {
-                    code: "pt_BR",
-                    components: template.components,
-                }
-            },
+            template: template,
         },
     }
     return body;

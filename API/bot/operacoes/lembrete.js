@@ -3,6 +3,7 @@ import cron from "node-cron";
 import moment from "moment-timezone";
 import telefones from '../../model/telefone.js';
 import reuniao from "../../model/reuniao.js";
+import pessoas from "../../model/pessoa.js";
 import { templateMessage } from '../../utll/requestBuilder.js';
 
 /**
@@ -25,48 +26,57 @@ const envioLembrete = async () => {
         check_10_minutes.subtract(3, 'hours');
         check_10_minutes = check_10_minutes.toDate();
 
+        //[TODO]: Precisa ajustar esse trecho futuramente, visto que várias pessoas podem ter reuniões no mesmo horário, então precisamos passar por todas para enviar o lembrete
         const reunioes = await reuniao.find({
-            dataHoraInicio: {
-                $gte: now,
-                $lt: check_10_minutes
-            }
-        });
+                dataHoraInicio: {
+                    $gte: now,
+                    $lte: check_10_minutes
+                }
+            });
 
-        if (!reunioes.length === 0){
+        if (reunioes.length > 0) {
             const telefone = await telefones.find({
-                pessoa: reunioes.organizador._id
+                pessoa: reunioes[0].organizador.toString()
             })
-            const pessoa = await pessoa.find({
-                pessoa: reunioes.organizador._id
+            const pessoas_encontradas = await pessoas.find({
+                _id: reunioes[0].organizador.toString()
             })
-            
+
             for (const reuniao in reunioes){
-                console.log(`Envio de lembretes para ${reuniao.organizador._id}: ${reuniao.nome}`)
+                console.log(`Envio de lembretes para ${reunioes[0].organizador}: ${pessoas_encontradas[0].nome}`)
+                if (reunioes[0].organizador.toString() === telefone[0].pessoa.toString()){
+                try {
+                   const response = await axios(
+                        templateMessage(telefone[0].numero
+                            , buildTemplateMessageLembrete(pessoas_encontradas[0].nome, reunioes[0].titulo, reunioes[0].dataHoraInicio)
+                        ));
+                    console.log("Lembrete enviado")
+                    } catch (error) {
+                        console.log("Não foi possível enviar o lembrete", error)
+                    }
                 
-                if (reuniao.organizar._id === telefone.pessoa){
-                    await axios(
-                        templateMessage(telefone.numero,
-                             buildTemplateMessageLembrete(reuniao.titulo, pessoa.nome, reuniao.dataHoraInicio)
-                            )
-                        )
                 }
             }
         }
-
+        return res.status(200).json({ message: 'lembrete enviado!' });
     } catch(err) {
         console.log(err)
     }
 }
 
+
 /**
  * 
- * @param {*} reuniao 
- * @param {*} pessoa 
- * @param {*} dataHoraInicio 
+ * @param {String} nome - Nome do usuário 
+ * @param {String} titulo - Título da reunião 
+ * @param {String} dataHoraInicio - Horário de início da reunião 
  */
 const buildTemplateMessageLembrete = (nome, titulo, dataHoraInicio) => {
-    template = {
-        name: "lembrete_reuniao",
+    const template = {
+        name: "lembre_reuniao",
+        language: {
+            code: "pt_BR",
+        },
         components: [{
             type: "body",
             parameters: [
@@ -76,6 +86,10 @@ const buildTemplateMessageLembrete = (nome, titulo, dataHoraInicio) => {
             ]
         }]
     }
+    return template;
 }
 
-cron.schedule('* * * * *', envioLembrete);
+// cron.schedule('* * * * *', envioLembrete);
+// export default envioLembrete;
+
+envioLembrete();
