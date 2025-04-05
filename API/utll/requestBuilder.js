@@ -209,3 +209,30 @@ export const mediaMessage = (from, img) => {
     }
     return body;
 }
+
+/**
+ * Função que monta o corpo da mensagem de template
+ * 
+ * @param {number} from - numero de telefone para quem será enviado a mensagem
+ * @typedef {Object} template - template da mensagem
+ * 
+ * @returns - retorna o corpo da mensagem
+ */
+export const templateMessage = (from, template) => {
+    let body = {
+        method: "POST",
+        url: url(phoneNumber),
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        data: {
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: from,
+            type: "template",
+            template: template,
+        },
+    }
+    return body;
+}
