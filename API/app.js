@@ -43,7 +43,7 @@ app.use(API + '/mensagem', mensagemRouter);
 app.use(API + '/reuniao', reuniaoRouter);
 app.use(API + '/participantes', participantesRouter);
 app.use(API + '/chat', chatRouter);
-app.use(API + '/lembrete', lembreRouter);
+// app.use(API + '/lembrete', lembreRouter);
 
 conn().then(()=> {
     app.listen(PORT, () => {
