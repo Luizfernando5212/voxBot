@@ -33,22 +33,35 @@ const envioLembrete = async () => {
                     $lte: check_10_minutes
                 }
             });
+        
+        // Se não encontrar ninguém, não faz nada
+        if (reunioes.length === 0){
+                return;
+        }
+
+        const organizadores = reunioes.map(r => r.organizador.toString());
 
         if (reunioes.length > 0) {
             const telefone = await telefones.find({
-                pessoa: reunioes[0].organizador.toString()
-            })
-            const pessoas_encontradas = await pessoas.find({
-                _id: reunioes[0].organizador.toString()
-            })
+                pessoa: { $in: organizadores }
+            }).toArray();
 
-            for (const reuniao in reunioes){
-                console.log(`Envio de lembretes para ${reunioes[0].organizador}: ${pessoas_encontradas[0].nome}`)
-                if (reunioes[0].organizador.toString() === telefone[0].pessoa.toString()){
+            const pessoas_encontradas = await pessoas.find({
+                _id: { $in: organizadores }
+            }).toArray();
+
+            for (const reuniao of reunioes){
+                console.log(`Envio de lembretes para ${reuniao.organizador.toString()}: ${reuniao.nome}`)
+
+                const tel = telefone.find(t => t.pessoa.toString() === reuniao.organizador.toString());
+                const pessoa = pessoas_encontradas.find(p => p._id.toString() === reuniao.organizador.toString());
+
+                if (tel && pessoa) {
+
                 try {
                    const response = await axios(
                         templateMessage(telefone[0].numero
-                            , buildTemplateMessageLembrete(pessoas_encontradas[0].nome, reunioes[0].titulo, reunioes[0].dataHoraInicio)
+                            , buildTemplateMessageLembrete(pessoa.nome, reuniao.titulo, reuniao.dataHoraInicio)
                         ));
                     console.log("Lembrete enviado")
                     } catch (error) {
@@ -89,7 +102,7 @@ const buildTemplateMessageLembrete = (nome, titulo, dataHoraInicio) => {
     return template;
 }
 
-// cron.schedule('* * * * *', envioLembrete);
+cron.schedule('*/10 * * * *', envioLembrete);
 // export default envioLembrete;
 
-envioLembrete();
+// envioLembrete();
