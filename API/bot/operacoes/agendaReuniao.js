@@ -6,6 +6,13 @@ import { textMessage } from '../../utll/requestBuilder.js';
 import axios from 'axios';
 import mongoose from 'mongoose';
 
+/**
+ * 
+ * @param {Object} consulta - Objeto de consulta de pessoa retornado do banco de dados
+ * @param {Object} objReuniao - Objeto de reunião estruturado
+ * @param {Object} res 
+ * @returns 
+ */
 const agendaReuniao = async (consulta, objReuniao, res) => {
     objReuniao.organizador = consulta[0]._id;
     const novaReuniao = await Reuniao.create(objReuniao);

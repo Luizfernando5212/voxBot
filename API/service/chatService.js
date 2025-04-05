@@ -7,6 +7,14 @@ import numero from '../model/telefone.js';
 dotenv.config();
 
 export default {
+    /** 
+    * @desc    Get access to the webhook
+    * @route   GET /api/chat
+    * @access  Public
+    * @param   {req}
+    * @param   {res}
+    * @return  {Object} - Returns a 200 status code if the token is valid
+    */
     async getAccess(req, res) {
 
         const verify_token = process.env.VERIFY_TOKEN;
@@ -31,10 +39,18 @@ export default {
         }
     },
 
+    /**
+     * @desc    Webhook for receiving messages
+     * @route   POST /api/chat
+     * @access  Public
+     * @param   {req}
+     * @param   {res}
+     * @return  {Object} - Returns a 200 status code if the message is received
+     */
     async webHook(req, res) {
         const body = req.body.entry[0];
         if (body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.timestamp > Date.now() / 1000 - 10) {
-            console.log('ignoring webhook, mensagem antiga');
+            console.log('ignoring webhook, old message');
             return res.status(200).json({ message: 'ok' });
         }
         if (body.changes[0] && body.changes[0].field !== 'messages') {
@@ -49,7 +65,7 @@ export default {
             if (message === null) {
                 return res.status(400).json({ body: body });
             } else {
-
+                
                 const consulta = await numero.find({ "numero": message.from })
                     .populate({
                         path: 'pessoa',

@@ -10,6 +10,7 @@ dotenv.config();
 import conn from './connection/db.js';
 // const conn = require('./connection/db');
 
+// Importando reteadoes
 import empresaRouter from './routes/empresa.js';
 import setorRouter from './routes/setor.js';
 import pessoaRouter from './routes/pessoa.js';
@@ -20,9 +21,10 @@ import participantesRouter from './routes/participantes.js';
 import chatRouter from './routes/chat.js';
 
 var app = express();
+// Declarando porta a ser utilizada
 const PORT = process.env.PORT || 3000
 
-
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -43,6 +45,7 @@ app.use(API + '/reuniao', reuniaoRouter);
 app.use(API + '/participantes', participantesRouter);
 app.use(API + '/chat', chatRouter);
 
+// Rota padrão
 conn().then(()=> {
     app.listen(PORT, () => {
         console.log('listening for requests: ' + PORT)

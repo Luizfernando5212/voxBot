@@ -10,7 +10,7 @@ dotenv.config();
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-
+// Objeto de validação do evento utilizando o Zod
 const Evento = z.object({
     titulo: z.string(),
     local: z.string().optional(),
@@ -21,14 +21,12 @@ const Evento = z.object({
     participantes: z.array(z.string()),
     isDentroTema: z.boolean().describe('Deve ser true para ser considerado uma reunião válida.')
 });
-// Tentativa de validar data diretamente com o zod
-// .refine(dataHoraFim => {
-//     const dataFim = new Date(dataHoraFim);
-//     return dataFim > new Date();
-// }, {
-//     message: 'A data-hora deve ser maior que a data atual'
-// })
 
+/**
+ * @desc    Função para estruturar a mensagem utilizando o OpenAI
+ * @param {String} texto - Mesangem recebida do usuário 
+ * @returns {Object} - Objeto estruturado com as informações do evento
+ */
 async function estruturaMensagemTexto(texto) {
     try {
         let responseFormat = zodResponseFormat(Evento, 'evento');

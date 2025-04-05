@@ -1,4 +1,4 @@
-import setor from '../model/setor.js';
+import Setor from '../model/setor.js';
 
 export default {
     async create(req, res) {
