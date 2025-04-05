@@ -18,7 +18,7 @@ import mensagemRouter from './routes/mensagem.js';
 import reuniaoRouter from './routes/reuniao.js';
 import participantesRouter from './routes/participantes.js';
 import chatRouter from './routes/chat.js';
-import lembreRouter from './routes/lembrete.js';
+// import lembreRouter from './routes/lembrete.js';
 
 var app = express();
 const PORT = process.env.PORT || 3000
