@@ -49,7 +49,8 @@ export default {
      */
     async webHook(req, res) {
         const body = req.body.entry[0];
-        if (body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.timestamp > Date.now() / 1000 - 10) {
+        if (body?.changes?.[0]?.value?.messages?.[0]?.timestamp < Date.now() / 1000 - 10 || 
+           !body?.changes?.[0]?.value?.messages?.[0]) {
             console.log('ignoring webhook, old message');
             return res.status(200).json({ message: 'ok' });
         }
@@ -65,7 +66,7 @@ export default {
             if (message === null) {
                 return res.status(400).json({ body: body });
             } else {
-                
+
                 const consulta = await numero.find({ "numero": message.from })
                     .populate({
                         path: 'pessoa',

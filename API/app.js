@@ -19,6 +19,7 @@ import mensagemRouter from './routes/mensagem.js';
 import reuniaoRouter from './routes/reuniao.js';
 import participantesRouter from './routes/participantes.js';
 import chatRouter from './routes/chat.js';
+// import lembreRouter from './routes/lembrete.js';
 
 var app = express();
 // Declarando porta a ser utilizada
@@ -44,6 +45,7 @@ app.use(API + '/mensagem', mensagemRouter);
 app.use(API + '/reuniao', reuniaoRouter);
 app.use(API + '/participantes', participantesRouter);
 app.use(API + '/chat', chatRouter);
+// app.use(API + '/lembrete', lembreRouter);
 
 // Rota padrão
 conn().then(()=> {

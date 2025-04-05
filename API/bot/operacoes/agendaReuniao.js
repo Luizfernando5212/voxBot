@@ -16,6 +16,7 @@ import mongoose from 'mongoose';
 const agendaReuniao = async (consulta, objReuniao, res) => {
     objReuniao.organizador = consulta[0]._id;
     const novaReuniao = await Reuniao.create(objReuniao);
+
     const participantes = objReuniao.participantes;
 
     try {
@@ -55,14 +56,9 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
             }
         }
 
-        const novoParticipante = {
-            pessoa: consulta[0].pessoa._id,
-            reuniao: novaReuniao._id,
-            conviteAceito: true
-        }
-        await Participantes.create(novoParticipante);
-        await axios(textMessage(consulta[0].numero, `Reunião agendada com sucesso!`));
-
+        const participateDoc = new Participantes(novoParticipante);
+        await participateDoc.save();
+        await axios(textMessage(consulta[0].numero, 'Reunião agendada com sucesso!'));
         return res.status(200).json({ message: 'Reunião agendada com sucesso!' });
     } catch (error) {
         console.log(error);
