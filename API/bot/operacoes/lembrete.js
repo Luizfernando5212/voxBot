@@ -26,52 +26,51 @@ const envioLembrete = async () => {
         check_10_minutes.subtract(3, 'hours');
         check_10_minutes = check_10_minutes.toDate();
 
-        //[TODO]: Precisa ajustar esse trecho futuramente, visto que várias pessoas podem ter reuniões no mesmo horário, então precisamos passar por todas para enviar o lembrete
-        const reunioes = await reuniao.find({
-                dataHoraInicio: {
-                    $gte: now,
-                    $lte: check_10_minutes
-                }
-            });
-        
-        // Se não encontrar ninguém, não faz nada
-        if (reunioes.length === 0){
-                return;
-        }
-
-        const organizadores = reunioes.map(r => r.organizador.toString());
-
-        if (reunioes.length > 0) {
-            const telefone = await telefones.find({
-                pessoa: { $in: organizadores }
-            }).toArray();
-
-            const pessoas_encontradas = await pessoas.find({
-                _id: { $in: organizadores }
-            }).toArray();
-
-            for (const reuniao of reunioes){
-                console.log(`Envio de lembretes para ${reuniao.organizador.toString()}: ${reuniao.nome}`)
-
-                const tel = telefone.find(t => t.pessoa.toString() === reuniao.organizador.toString());
-                const pessoa = pessoas_encontradas.find(p => p._id.toString() === reuniao.organizador.toString());
-
-                if (tel && pessoa) {
-
-                try {
-                   const response = await axios(
-                        templateMessage(telefone[0].numero
-                            , buildTemplateMessageLembrete(pessoa.nome, reuniao.titulo, reuniao.dataHoraInicio)
-                        ));
-                    console.log("Lembrete enviado")
-                    } catch (error) {
-                        console.log("Não foi possível enviar o lembrete", error)
+        try {
+            const reunioes = await reuniao.find({
+                    dataHoraInicio: {
+                        $gte: now,
+                        $lte: check_10_minutes
                     }
+                });
+
+            const organizadores = reunioes.map(r => r.organizador.toString());
+
+            console.log(`esse é o organizador ${organizadores} `)
+
+            if (reunioes.length > 0) {
+                const telefone = await telefones.find({
+                    pessoa: { $in: organizadores }
+                })
+
+                const pessoas_encontradas = await pessoas.find({
+                        _id: { $in: organizadores }
+                    })
+                    
+                for (const reuniao of reunioes){
+                    
+                    const tel = telefone.find(t => t.pessoa.toString() === reuniao.organizador.toString());
+                    const pessoa = pessoas_encontradas.find(p => p._id.toString() === reuniao.organizador.toString());
+                    
+                    console.log(`Envio de lembretes para ${reuniao.organizador.toString()}: ${pessoa.nome.toString()}`)
                 
+                    if (tel && pessoa) {
+                        try {
+                        const response = await axios(
+                                templateMessage(tel.numero
+                                    , buildTemplateMessageLembrete(pessoa.nome, reuniao.titulo, reuniao.dataHoraInicio)
+                                ));
+                            console.log("Lembrete enviado")
+                        } catch (error) {
+                            console.log("Não foi possível enviar o lembrete", error)
+                        }
+                    }
                 }
             }
+        } catch (error) {
+            console.log("Não encontrou a informação")
+            return;
         }
-        return res.status(200).json({ message: 'lembrete enviado!' });
     } catch(err) {
         console.log(err)
     }
