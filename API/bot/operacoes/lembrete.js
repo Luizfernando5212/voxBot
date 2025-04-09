@@ -36,8 +36,6 @@ const envioLembrete = async () => {
 
             const organizadores = reunioes.map(r => r.organizador.toString());
 
-            console.log(`esse é o organizador ${organizadores} `)
-
             if (reunioes.length > 0) {
                 const telefone = await telefones.find({
                     pessoa: { $in: organizadores }
