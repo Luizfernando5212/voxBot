@@ -9,6 +9,14 @@ import FormData from 'form-data'
 dotenv.config();
 
 export default {
+    /** 
+    * @desc    Get access to the webhook
+    * @route   GET /api/chat
+    * @access  Public
+    * @param   {req}
+    * @param   {res}
+    * @return  {Object} - Returns a 200 status code if the token is valid
+    */
     async getAccess(req, res) {
 
         const verify_token = process.env.VERIFY_TOKEN;
@@ -33,54 +41,58 @@ export default {
         }
     },
 
+    /**
+     * @desc    Webhook for receiving messages
+     * @route   POST /api/chat
+     * @access  Public
+     * @param   {req}
+     * @param   {res}
+     * @return  {Object} - Returns a 200 status code if the message is received
+     */
     async webHook(req, res) {
         const body = req.body.entry[0];
         if (body?.changes?.[0]?.value?.messages?.[0]?.timestamp < Date.now() / 1000 - 10 || 
            !body?.changes?.[0]?.value?.messages?.[0]) {
-            console.log('ignoring webhook, mensagem antiga');
+            console.log('ignoring webhook, old message');
             return res.status(200).json({ message: 'ok' });
-        } else {
-            if (body.changes[0] && body.changes[0].field !== 'messages') {
-                // not from the messages webhook so dont process
-                return res.status(400).json({ boddy: body });
-            };
-    
-            try {
-                const message = body?.changes?.[0]?.value?.messages?.[0] || null;
-                
-                if (message.type === 'audio'){
-                    const audioId = message.audio.id;
-                }
+        }
+        if (body.changes[0] && body.changes[0].field !== 'messages') {
+            // not from the messages webhook so dont process
+            return res.status(400).json({ boddy: body });
+        };
 
-                if (message === null) {
-                    return res.status(400).json({ body: body });
+        try {
+            const message = body?.changes?.[0]?.value?.messages?.[0] || null;
+
+
+            if (message === null) {
+                return res.status(400).json({ body: body });
+            } else {
+
+                const consulta = await numero.find({ "numero": message.from })
+                    .populate({
+                        path: 'pessoa',
+                        select: 'nome setor _id',
+                        populate: {
+                            path: 'setor',
+                            populate: { path: 'empresa', select: 'status' }
+                        }
+                    });
+                if (consulta.length === 0) {
+                    const message = "Olá, você ainda não está cadastrado em nosso sistema, por favor, entre em contato com o administrador do sistema para mais informações.";
+                    await axios(textMessage(message.from, message));
+                } else if (consulta[0].pessoa.setor.empresa.status === 'I') {
+                    // send message to user
+                    const message = "Olá, a empresa a qual você pertence está inadimplente, por favor, entre em contato com o administrador do sistema para mais informações.";
+                    await axios(textMessage(message.from, message));
                 } else {
-    
-                    const consulta = await numero.find({ "numero": message.from })
-                        .populate({
-                            path: 'pessoa',
-                            select: 'nome setor _id',
-                            populate: {
-                                path: 'setor',
-                                populate: { path: 'empresa', select: 'status' }
-                            }
-                        });
-                    if (consulta.length === 0) {
-                        const message = "Olá, você ainda não está cadastrado em nosso sistema, por favor, entre em contato com o administrador do sistema para mais informações.";
-                        await axios(textMessage(message.from, message));
-                    } else if (consulta[0].pessoa.setor.empresa.status === 'I') {
-                        // send message to user
-                        const message = "Olá, a empresa a qual você pertence está inadimplente, por favor, entre em contato com o administrador do sistema para mais informações.";
-                        await axios(textMessage(message.from, message));
-                    } else {
-                        await mensagem(consulta, message, res);
-    
-                    }
+                    await mensagem(consulta, message, res);
+
                 }
-            } catch (err) {
-                console.log(err)
-                return res.status(400).json({ error: err });
             }
+        } catch (err) {
+            console.log(err)
+            return res.status(400).json({ error: err });
         }
     }
 

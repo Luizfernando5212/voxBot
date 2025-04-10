@@ -38,17 +38,18 @@ export default {
     
                 // Buscar participantes relacionados à reunião
                 const participantes = await Participantes.find({ reuniao: reuniao._id })
-                    .populate({ path: 'pessoa', select: 'nome' });
-        
+                     .populate({ path: 'pessoa', select: 'nome _id' });
                 // Extrair apenas os nomes dos participantes
+                console.log(participantes)
                 const listaParticipantes = participantes.map(p => p.pessoa.nome);
+
+                console.lo
         
                 return res.status(200).json({
                     ...reuniao.toObject(),
                     participantes: listaParticipantes
                 });
                 
-                return res.status(200).json(reuniao);
             }
         } catch (err) {
             return res.status(400).json({ error: 'Error fetching Reuniao' });
