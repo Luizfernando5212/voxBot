@@ -1,10 +1,14 @@
 import text from './text/mensagemTexto.js';
+import interactive from './interactive/mensagemInterativa.js';
 
 // Objeto para redirecionar as mensagens baseado no tipo da mensagem recebida
 const redirecionar = {
     text: async (consulta, objetoMensagem, res) => {
         return await text(consulta, objetoMensagem.from, objetoMensagem.text.body, res);
-    }
+    },
+    interactive: async (consulta, objetoMensagem, res) => {
+        return await interactive(consulta, objetoMensagem, res);
+    },
 } 
 
 /**
@@ -15,7 +19,8 @@ const redirecionar = {
  * @returns 
  */
 const mensagem = async (consulta, objeto, res) =>  {
-    console.log(objeto.type);
+    console.log(objeto);
+    console.log(objeto.interactive);
     return await redirecionar[objeto.type](consulta, objeto, res);
 }
 
