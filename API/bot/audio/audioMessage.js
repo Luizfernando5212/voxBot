@@ -38,7 +38,7 @@ const sendToOpeAI = async (form) => {
 const handleAudioMessage = async (audioId) => {
     const mediaResponse = await axios({
         method: 'GET',
-        url: `https://graph.facebook.com/v22.0/3961611840820525`,
+        url: `https://graph.facebook.com/v22.0/${audioId}`,
         headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
