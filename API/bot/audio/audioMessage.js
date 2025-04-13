@@ -9,6 +9,15 @@ dotenv.config();
 const token = process.env.WHATSAPP_TOKEN;
 const openAiKey = process.env.OPENAI_API_KEY;
 
+/**
+ * Função que constrói a mensagem de áudio recebida do WhatsApp e envia para o OpenAI
+ * 
+ * @param {Object} consulta - Objeto de consulta de pessoa retornado do banco de dados
+ * @param {String} numeroTel - Número de telefone do destinatário
+ * @param {String} audioId - ID do áudio recebido
+ * @param {Object} res - Resposta do servidor
+ * @returns {void} - A função não retorna nada
+ */
 async function audioBuilder(consulta, numeroTel, audioId, res) {
     try {
         const url = await handleAudioMessage(audioId, token);
@@ -22,6 +31,11 @@ async function audioBuilder(consulta, numeroTel, audioId, res) {
     }
 }
 
+/**
+ * Função que envia o áudio para o OpenAI e retorna a transcrição
+ * @param {FormData} form - FormData com o arquivo de áudio
+ * @return {String} - Transcrição do áudio
+ */
 const sendToOpeAI = async (form) => {
     const response = await axios({
         method: 'POST',
@@ -35,6 +49,11 @@ const sendToOpeAI = async (form) => {
     return response.data.text;
 }
 
+/**
+ * 
+ * @param {String} audioId - ID do áudio recebido 
+ * @returns {String} - URL do áudio
+ */
 const handleAudioMessage = async (audioId) => {
     const mediaResponse = await axios({
         method: 'GET',
@@ -47,6 +66,11 @@ const handleAudioMessage = async (audioId) => {
     return mediaResponse.data.url;
 }
 
+/**
+ * 
+ * @param {String} mediaResponseUrl - URL do áudio recebido 
+ * @returns {FormData} - FormData com o arquivo de áudio
+ */
 const downloadAudioMessage = async(mediaResponseUrl) => {
     const audioPath = 'mensagem.ogg';
     const audioStream = await axios({
