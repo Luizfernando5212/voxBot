@@ -10,6 +10,7 @@ var ReuniaoSchema = new Schema(
         status: { type: String, enum: ['Agendada', 'Realizada', 'Cancelada'], required: true, default: 'Agendada' },
         organizador: { type: Schema.Types.ObjectId, ref: 'Pessoa', required: true },
         setor: { type: Schema.Types.ObjectId, ref: 'Setor', required: false },
+        qtdDuplicados: { type: Number, required: false, default: 0 },
     }
 );
 
