@@ -99,7 +99,7 @@ const buildTemplateMessageLembrete = (nome, titulo, dataHoraInicio) => {
     return template;
 }
 
-cron.schedule('*/10 * * * *', envioLembrete);
+cron.schedule('* * * * *', envioLembrete);
 // export default envioLembrete;
 
 // envioLembrete();
