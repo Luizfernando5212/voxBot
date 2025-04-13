@@ -17,13 +17,15 @@ async function audioBuilder(audioId) {
 
 
 const handleAudioMessage = async (audioId) => {
-    const mediaResponse = await axios.get(`https://graph.facebook.com/v22.0/${audioId}`, {
+    const mediaResponse = await axios({
+        method: 'GET',
+        url: `https://graph.facebook.com/v22.0/${audioId}`,
         headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
         }
     })
-    return mediaResponse;
+    return mediaResponse.data.url;
 }
 
 const downloadAudioMessage = async(mediaResponseUrl) => {
