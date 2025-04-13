@@ -7,7 +7,7 @@ const redirecionar = {
         return await text(consulta, objetoMensagem.from, objetoMensagem.text.body, res);
     },
     audio: async (consulta, objetoMensagem, res) => {
-        return await audio(objetoMensagem.audio.id);
+        return await audio(consulta, objetoMensagem.from, objetoMensagem.audio.id, res);
     }
 } 
 

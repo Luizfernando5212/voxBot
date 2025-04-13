@@ -1,25 +1,44 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import fs from "fs";
-import FormData from 'form-data'
+import FormData from 'form-data';
+import text from '../text/mensagemTexto.js';
 
 dotenv.config();
 
 const token = process.env.WHATSAPP_TOKEN;
+const openAiKey = process.env.OPENAI_API_KEY;
 
-async function audioBuilder(audioId) {
-    console.log("caiu aqui", audioId)
-    const url = await handleAudioMessage(audioId, token);
-    const form = await downloadAudioMessage(url);
-    console.log(`esse é o form ${form}`);
-    
+async function audioBuilder(consulta, numeroTel, audioId, res) {
+    try {
+        const url = await handleAudioMessage(audioId, token);
+        const form = await downloadAudioMessage(url);
+        const response = await sendToOpeAI(form);
+
+        console.log(response);
+        await axios(text(consulta, numeroTel, response, res));
+    } catch (err) {
+        console.log(`Não conseguiu enviar a mensagem: ${err}`);
+    }
 }
 
+const sendToOpeAI = async (form) => {
+    const response = await axios({
+        method: 'POST',
+        url: 'https://api.openai.com/v1/audio/transcriptions',
+        headers: {
+            Authorization: `Bearer ${openAiKey}`,
+            "Content-Type": "multipart/form-data",
+        },
+        data: form
+    });
+    return response.data.text;
+}
 
 const handleAudioMessage = async (audioId) => {
     const mediaResponse = await axios({
         method: 'GET',
-        url: `https://graph.facebook.com/v22.0/${audioId}`,
+        url: `https://graph.facebook.com/v22.0/3961611840820525`,
         headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -54,4 +73,4 @@ const downloadAudioMessage = async(mediaResponseUrl) => {
     return form;
 }
 
-export default audioBuilder
+export default audioBuilder;
