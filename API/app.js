@@ -56,7 +56,7 @@ conn().then(()=> {
     })
     cron.schedule('*/5 * * * *', async() => {
         try {
-            await envioLembrete();
+            envioLembrete();
         } catch(error){
             console.log("Erro ao executar o cron", error)
         }
