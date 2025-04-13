@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import envioLembrete from './bot/operacoes/lembrete.js';
+import cron from "node-cron";
 
 const API = '/api';
 dotenv.config();
