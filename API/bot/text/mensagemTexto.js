@@ -45,7 +45,6 @@ async function estruturaMensagemTexto(texto) {
             response_format: responseFormat,
         });
         let resultado = reuniao.choices[0].message.parsed;
-        console.log(resultado)
         if (resultado.isDentroTema) {
             if (resultado.isSuficiente) {
                 if (resultado.setor === '') {
@@ -81,24 +80,22 @@ async function estruturaMensagemTexto(texto) {
 }
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
-    const resposta = await estruturaMensagemTexto(mensagem);
-    if (typeof resposta === "object" && resposta !== null) {
-        console.log("É um objeto");
-        const respostaString = JSON.stringify(resposta);
-        try {
-            await agendaReuniao(consulta, resposta, res);
-            await axios(textMessage(numeroTel, respostaString));
-        } catch (err) {
-            console.log(err);
-            res.status(400).json({ error: 'Error sending message' + err });
+    if (consulta.etapaFluxo === 'inicial'){
+        const resposta = await estruturaMensagemTexto(mensagem);
+        if (typeof resposta === "object" && resposta !== null) {
+            const respostaString = JSON.stringify(resposta);
+            try {
+                await agendaReuniao(consulta, resposta, res);
+                await axios(textMessage(numeroTel, respostaString));
+            } catch (err) {
+                console.log(err);
+                res.status(400).json({ error: 'Error sending message' + err });
+            }
+        } else {
+            await axios(textMessage(numeroTel, resposta));
+            res.status(200).json({ message: 'Message sent successfully' });
         }
-    } else {
-        await axios(textMessage(numeroTel, resposta));
-        res.status(200).json({ message: 'Message sent successfully' });
     }
-
-
-
 }
 
 export default mensagemTexto;

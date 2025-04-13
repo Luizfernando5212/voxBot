@@ -67,19 +67,19 @@ export default {
                 return res.status(400).json({ body: body });
             } else {
 
-                const consulta = await numero.find({ "numero": message.from })
+                const consulta = await numero.findOne({ "numero": message.from })
                     .populate({
                         path: 'pessoa',
                         select: 'nome setor _id',
                         populate: {
                             path: 'setor',
-                            populate: { path: 'empresa', select: 'status' }
+                            populate: { path: 'empresa', select: 'status _id' }
                         }
                     });
                 if (consulta.length === 0) {
                     const message = "Olá, você ainda não está cadastrado em nosso sistema, por favor, entre em contato com o administrador do sistema para mais informações.";
                     await axios(textMessage(message.from, message));
-                } else if (consulta[0].pessoa.setor.empresa.status === 'I') {
+                } else if (consulta.pessoa.setor.empresa.status === 'I') {
                     // send message to user
                     const message = "Olá, a empresa a qual você pertence está inadimplente, por favor, entre em contato com o administrador do sistema para mais informações.";
                     await axios(textMessage(message.from, message));

@@ -2,7 +2,7 @@ import Reuniao from '../../model/reuniao.js';
 import Participantes from '../../model/participantes.js';
 import Pessoa from '../../model/pessoa.js';
 import Telefone from '../../model/telefone.js';
-import { textMessage } from '../../utll/requestBuilder.js';
+import { textMessage, interactiveListMessage } from '../../utll/requestBuilder.js';
 import axios from 'axios';
 import mongoose from 'mongoose';
 
@@ -32,6 +32,44 @@ const adicionaParticipante = async (participante, reuniao) => {
     }
 }
 
+const findWithJoinCascade = async ({
+    model,
+    joins = [],
+    conditions = [],
+    project = null
+  }) => {
+    const pipeline = [];
+  
+    // Add lookups
+    joins.forEach(({ from, localField, foreignField = '_id', as }) => {
+      pipeline.push({
+        $lookup: {
+          from,
+          localField,
+          foreignField,
+          as
+        }
+      });
+      pipeline.push({ $unwind: `$${as}` });
+    });
+  
+    // Add filters (AND conditions)
+    if (conditions.length > 0) {
+      pipeline.push({
+        $match: {
+          $and: conditions
+        }
+      });
+    }
+
+    if (project) {
+        pipeline.push({ $project: project });
+      }
+  
+    return await model.aggregate(pipeline);
+  };
+  
+
 /**
  * 
  * @param {Object} consulta - Objeto de consulta de pessoa retornado do banco de dados
@@ -40,7 +78,7 @@ const adicionaParticipante = async (participante, reuniao) => {
  * @returns 
  */
 const agendaReuniao = async (consulta, objReuniao, res) => {
-    objReuniao.organizador = consulta[0].pessoa._id;
+    objReuniao.organizador = consulta.pessoa._id;
     const novaReuniao = await Reuniao.create(objReuniao);
     let participantes = objReuniao.participantes;
     const setor = objReuniao.setor;
@@ -56,17 +94,47 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 await adicionaParticipante(participante, novaReuniao);
             });
         } else {
-            participantes.forEach(async (participante) => {
-                let participanteDoc = await Pessoa.find({ nome: { $regex: `^${participante}`, $options: 'i' } });
+            let naoEncontrados = [];
+            let qtdDuplicados = 0;
+            for (const participante of participantes) {
+                let participanteDoc = await findWithJoinCascade({
+                    model: Pessoa,
+                    joins: [
+                        { from: 'setors', localField: 'setor', as: 'setor' },
+                        { from: 'empresas', localField: 'setor.empresa', as: 'empresa' },
+                    ],
+                    conditions: [
+                        { nome: { $regex: `${participante}`, $options: 'i' } },
+                        { 'empresa._id': consulta.pessoa.setor.empresa._id }
+                    ],
+                    project: { _id: 1, nome: 1, 'setor.descricao': 1 }
+                });
                 if (participanteDoc.length === 1) {
                     await adicionaParticipante(participanteDoc[0], novaReuniao);
                 } else if (participanteDoc.length > 1) {
                     // Enviar lista de pessoas com o mesmo nome para o usuário escolher
+                    let listaParticipantes = participanteDoc.map(p => ({
+                    nome: `${p.nome} - ${p.setor.descricao}`,
+                    id: p._id
+                }));
+                    let mensagem = `Encontramos mais de uma pessoa com o nome ${participante}. Por favor, escolha uma das opções`; 
+                    await axios(interactiveListMessage(consulta.numero, mensagem, listaParticipantes,'Pessoas'));
+                    qtdDuplicados++;
                 } else {
-                    // Enviar mensagem para o usuário informando que não foi encontrado
+                    // Participante não encontrado, nesse caso mandar mensagem para o usuário
+                    naoEncontrados.push(participante);
                 }
-            });
-            await adicionaParticipante(consulta[0].pessoa, novaReuniao);
+            };
+            if (naoEncontrados.length > 0) {
+                let mensagemNaoEncontrados = `As seguintes pessoas não foram encontradas: ${naoEncontrados.join(', ')}.`;
+                await axios(textMessage(consulta.numero, mensagemNaoEncontrados));
+                await axios(textMessage(consulta.numero, 'Verifique o(s) nome(s) ou consulte o administrador e tente novamente.'));
+            } else if (qtdDuplicados > 0) {
+                // Atualizar qtdDuplicados na reunião
+                novaReuniao.qtdDuplicados = qtdDuplicados;
+                await novaReuniao.save();
+            }
+            // await adicionaParticipante(consulta.pessoa, novaReuniao);
         }
 
         return res.status(200).json({ message: 'Reunião agendada com sucesso!' });

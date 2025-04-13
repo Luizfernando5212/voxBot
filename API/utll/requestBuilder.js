@@ -175,7 +175,7 @@ export const interactiveMessage = (from, message, buttons, i) => {
  * @desc    Function to build a message body object with a list of buttons
  * @param {string} from - phone number
  * @param {string} message - message to be sent
- * @param {list} buttons - list of buttons to be sent
+ * @param {list} buttons - list of objects of buttons to be sent
  * @param {string} name - of the button
  * @param {number} i - index of the button
  * @returns {Object} - Returns body object for sending a text message
@@ -204,10 +204,10 @@ export const interactiveListMessage = (from, message, buttons, name, i) => {
                     sections: [
                         {
                             title: "SECTION_1_TITLE",
-                            rows: buttons.map((name, index) => {
+                            rows: buttons.map((button) => {
                                 return {
-                                    id: index + i,
-                                    title: name,
+                                    id: button.id,
+                                    title: button.nome,
                                 }
                             })
                         }
