@@ -10,7 +10,7 @@ const token = process.env.WHATSAPP_TOKEN;
 async function audioBuilder(audioId) {
     console.log("caiu aqui", audioId)
     const url = await handleAudioMessage(audioId, token);
-    const form = downloadAudioMessage(url);
+    const form = await downloadAudioMessage(url);
     console.log(`esse é o form ${form}`);
     
 }
