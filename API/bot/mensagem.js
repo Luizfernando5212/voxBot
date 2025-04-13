@@ -15,6 +15,7 @@ const redirecionar = {
  * @returns 
  */
 const mensagem = async (consulta, objeto, res) =>  {
+    console.log(objeto.type);
     return await redirecionar[objeto.type](consulta, objeto, res);
 }
 
