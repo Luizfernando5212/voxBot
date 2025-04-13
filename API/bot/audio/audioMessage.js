@@ -23,7 +23,7 @@ const handleAudioMessage = async (audioId) => {
             "Content-Type": "application/json",
         }
     })
-    return mediaResponse.data.url;
+    return mediaResponse;
 }
 
 const downloadAudioMessage = async(mediaResponseUrl) => {
