@@ -3,7 +3,10 @@ import moment from "moment-timezone";
 import telefones from '../../model/telefone.js';
 import reuniao from "../../model/reuniao.js";
 import pessoas from "../../model/pessoa.js";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
 import { templateMessage } from '../../utll/requestBuilder.js';
+dayjs.extend(utc);
 
 /**
  * A função envioLembrete é responsável por enviar lembretes de reuniões agendadas em um intervalo de 10 minutos
@@ -49,13 +52,16 @@ const envioLembrete = async () => {
                     const tel = telefone.find(t => t.pessoa.toString() === reuniao.organizador.toString());
                     const pessoa = pessoas_encontradas.find(p => p._id.toString() === reuniao.organizador.toString());
                     
-                    console.log(`Envio de lembretes para ${reuniao.organizador.toString()}: ${pessoa.nome.toString()}`)
+                    console.log(`Tentativa de envio de lembretes para ${reuniao.organizador.toString()}: ${pessoa.nome.toString()}`)
                 
                     if (tel && pessoa) {
                         try {
+                        const dataHoraInicio = dayjs.utc(reuniao.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
+
                         const response = await axios(
+
                                 templateMessage(tel.numero
-                                    , buildTemplateMessageLembrete(pessoa.nome, reuniao.titulo, reuniao.dataHoraInicio)
+                                    , buildTemplateMessageLembrete(pessoa.nome, reuniao.titulo, dataHoraInicio)
                                 ));
                             console.log("Lembrete enviado")
                         } catch (error) {
