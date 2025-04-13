@@ -54,7 +54,7 @@ conn().then(()=> {
     app.listen(PORT, () => {
         console.log('listening for requests: ' + PORT)
     })
-    cron.schedule('* * * * *', async() => {
+    cron.schedule('*/5 * * * *', async() => {
         try {
             await envioLembrete();
         } catch(error){

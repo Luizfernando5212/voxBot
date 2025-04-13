@@ -1,5 +1,4 @@
 import axios from "axios";
-import cron from "node-cron";
 import moment from "moment-timezone";
 import telefones from '../../model/telefone.js';
 import reuniao from "../../model/reuniao.js";
