@@ -10,8 +10,8 @@ const token = process.env.WHATSAPP_TOKEN;
 async function audioBuilder(audioId) {
     console.log("caiu aqui", audioId)
     const url = await handleAudioMessage(audioId, token);
-    console.log(`essa é a url ${url}`);
-    // const form = downloadAudioMessage(url);
+    const form = downloadAudioMessage(url);
+    console.log(`esse é o form ${form}`);
     
 }
 
@@ -30,7 +30,9 @@ const handleAudioMessage = async (audioId) => {
 
 const downloadAudioMessage = async(mediaResponseUrl) => {
     const audioPath = 'mensagem.ogg';
-    const audioStream = await axios.get(mediaResponseUrl, {
+    const audioStream = await axios({
+        url: mediaResponseUrl,
+        method: 'GET',
         responseType: 'stream',
         headers: {
             Authorization: `Bearer ${token}`,
