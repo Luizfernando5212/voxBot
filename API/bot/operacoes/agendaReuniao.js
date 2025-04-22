@@ -3,44 +3,8 @@ import Pessoa from '../../model/pessoa.js';
 import adicionaParticipante from './adicionaParticipante.js';
 import { textMessage, interactiveListMessage } from '../../utll/requestBuilder.js';
 import axios from 'axios';
+import findWithJoinCascade from '../../utll/mongoQuery.js';
 
-const findWithJoinCascade = async ({
-    model,
-    joins = [],
-    conditions = [],
-    project = null
-  }) => {
-    const pipeline = [];
-  
-    // Add lookups
-    joins.forEach(({ from, localField, foreignField = '_id', as }) => {
-      pipeline.push({
-        $lookup: {
-          from,
-          localField,
-          foreignField,
-          as
-        }
-      });
-      pipeline.push({ $unwind: `$${as}` });
-    });
-  
-    // Add filters (AND conditions)
-    if (conditions.length > 0) {
-      pipeline.push({
-        $match: {
-          $and: conditions
-        }
-      });
-    }
-
-    if (project) {
-        pipeline.push({ $project: project });
-      }
-  
-    return await model.aggregate(pipeline);
-  };
-  
 
 /**
  * 
