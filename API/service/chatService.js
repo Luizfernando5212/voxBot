@@ -3,8 +3,7 @@ import axios from 'axios';
 import { textMessage } from '../utll/requestBuilder.js';
 import mensagem from '../bot/mensagem.js';
 import numero from '../model/telefone.js';
-import fs from 'fs';
-import FormData from 'form-data'
+
 
 dotenv.config();
 
@@ -96,38 +95,4 @@ export default {
         }
     }
 
-}
-
-const handleAudioMessage = async (mediaId) => {
-    const mediaResponse = await axios.get(url(mediaId), {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        }
-    })
-    return mediaResponse.data.url;
-}
-
-const downloadAudioMessage = async(mediaResponseUrl) => {
-    const audioPath = 'mensagem.ogg';
-    const audioStream = await axios.get(mediaResponseUrl, {
-        responseType: 'stream',
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        }
-    });
-
-    await new Promise((resolve, reject) => {
-        const write = fs.creteWriteStream(audioPath);
-        audioStream.data.pipe(write);
-        write.on('finish', resolve);
-        write.on('error', reject);
-    });
-
-    const form = new FormData();
-    from.append('file', fs.createReadStream(audioPath));
-    form.append('model', 'whisper-1');
-
-    return form;
 }
