@@ -207,7 +207,7 @@ export const interactiveListMessage = (from, message, buttons, name, i) => {
                             rows: buttons.map((button) => {
                                 return {
                                     id: button.id,
-                                    title: button.nome,
+                                    title: button.nome.substring(0, 24),
                                 }
                             })
                         }

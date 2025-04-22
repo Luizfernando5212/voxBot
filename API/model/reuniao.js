@@ -7,7 +7,7 @@ var ReuniaoSchema = new Schema(
         pauta: { type: String, required: false },
         dataHoraInicio: { type: Date, required: true },
         dataHoraFim: { type: Date, required: true },
-        status: { type: String, enum: ['Agendada', 'Realizada', 'Cancelada'], required: true, default: 'Agendada' },
+        status: { type: String, enum: ['Agendada', 'Aguardando', 'Realizada', 'Cancelada'], required: true, default: 'Aguardando' },
         organizador: { type: Schema.Types.ObjectId, ref: 'Pessoa', required: true },
         setor: { type: Schema.Types.ObjectId, ref: 'Setor', required: false },
         qtdDuplicados: { type: Number, required: false, default: 0 },

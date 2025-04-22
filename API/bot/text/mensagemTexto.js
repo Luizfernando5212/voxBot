@@ -20,7 +20,7 @@ const Evento = z.object({
     dataHoraFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita.'),
     setor: z.string().optional().describe('Setor só deve ser preenchido caso não encontre participantes'),
     participantes: z.array(z.string()),
-    isDentroTema: z.boolean().describe('Deve ser true para ser considerado uma reunião válida.'),
+    isReuniao: z.boolean().describe('Deve ser true para ser considerado uma reunião válida.'),
     isSuficiente: z.boolean().describe('Deve ser true caso possua informações suficientes para agendar a reunião (titulo, dataHoraInicio, dataHoraFim, participantes).'),
 });
 
@@ -39,13 +39,13 @@ async function estruturaMensagemTexto(texto) {
                     ' E a reunião deve ser agendada para o futuro, não produza informações que não estejam explícitas no texto.' +
                     ' titulo, dataHoraInicio, dataHoraFim, (participantes ou setor) são informações obrigatórias.' +
                     ' Você deve saber diferencias um setor de uma pessoa, o setor é o nome do departamento e a pessoa é o nome/apelido do funcionário.' +
-                    ' isDentroTema diz se a messagem é sobre reunião ou não, isSuficiente diz se possui informações suficientes para agendar a reunião.' },
+                    ' isReuniao diz se a messagem é sobre reunião ou não, isSuficiente diz se possui informações suficientes para agendar a reunião.' },
                 { role: 'user', content: texto },
             ],
             response_format: responseFormat,
         });
         let resultado = reuniao.choices[0].message.parsed;
-        if (resultado.isDentroTema) {
+        if (resultado.isReuniao) {
             if (resultado.isSuficiente) {
                 if (resultado.setor === '') {
                     resultado.setor = null;

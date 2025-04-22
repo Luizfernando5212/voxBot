@@ -7,7 +7,7 @@ const redirecionar = {
         return await text(consulta, objetoMensagem.from, objetoMensagem.text.body, res);
     },
     interactive: async (consulta, objetoMensagem, res) => {
-        return await interactive(consulta, objetoMensagem, res);
+        return await interactive(consulta, objetoMensagem.from, objetoMensagem.interactive, res);
     },
 } 
 
@@ -19,8 +19,6 @@ const redirecionar = {
  * @returns 
  */
 const mensagem = async (consulta, objeto, res) =>  {
-    console.log(objeto);
-    console.log(objeto.interactive);
     return await redirecionar[objeto.type](consulta, objeto, res);
 }
 
