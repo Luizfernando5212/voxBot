@@ -16,6 +16,8 @@ const confirmarParticipante = async (consulta, numeroTel, mensagem, res) => {
     const reuniaoId = consulta.reuniao._id;
     const reuniaoAtual = await reuniao.findById(reuniaoId);
 
+    console.log(mensagem)
+
     const alteraStatusReuniao = async () => {
         reuniaoAtual.status = 'Agendada';
         reuniaoAtual.save();
