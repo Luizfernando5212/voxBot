@@ -14,4 +14,4 @@ var ReuniaoSchema = new Schema(
     }
 );
 
-export default mongoose.model('Reuniao', ReuniaoSchema);
+export default mongoose.model('Reuniao', ReuniaoSchema);0

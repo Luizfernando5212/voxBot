@@ -67,7 +67,8 @@ async function estruturaMensagemTexto(texto) {
                 return msg;
             }
         } else {
-            let msg = 'O VoxBot foi criado para agendar reuniões, por favor utilize-o para isso.';
+            let msg = 'O VoxBot foi criado para agendar reuniões, por favor utilize-o para isso.' + 
+                    ' Caso esteja deseje cancelar sua operação em andamento, envie "Cancelar" a qualquer momento.';
             return msg;
         }
     } catch (err) {

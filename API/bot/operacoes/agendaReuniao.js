@@ -88,6 +88,8 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 consulta.reuniao = novaReuniao._id;
                 await consulta.save();
                 // Atualizar etapaFluxo
+            } else {
+                // Validar se todos os participantes possuem disponibilidade
             }
         }
 
