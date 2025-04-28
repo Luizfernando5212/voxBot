@@ -4,6 +4,7 @@ import adicionaParticipante from './adicionaParticipante.js';
 import { textMessage, interactiveListMessage } from '../../utll/requestBuilder.js';
 import axios from 'axios';
 import findWithJoinCascade from '../../utll/mongoQuery.js';
+import haConflitoHorario from './verificaDisponibilidade.js';
 
 
 /**
@@ -33,6 +34,13 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
         } else {
             console.log('Erro ao adicionar participante:', participante.pessoa.nome);
         }
+    }
+    try {
+        // adicionando o organizador da reunião
+        await adicionaParticipante(consulta.pessoa, novaReuniao, notificaParticipante);
+    } catch (error) {
+        console.log('Erro ao adicionar organizador:', error);
+        return res.status(400).json({ error: 'Erro ao adicionar organizador' });
     }
 
     try {
@@ -90,6 +98,19 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 // Atualizar etapaFluxo
             } else {
                 // Validar se todos os participantes possuem disponibilidade
+                const enviaSugestoes = async (haConflito, sugestoes) => {
+                    if (haConflito) {
+                        let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos:`;
+                        axios(textMessage(consulta.numero, mensagemSugestoes));
+                        sugestoes.forEach((sugestao, index) => {
+                            mensagemSugestoes += `\n${index + 1}. ${sugestao.inicio} - ${sugestao.fim}`;
+                        });
+                    } else {
+                        let mensagemSugestoes = `A reunião foi agendada com sucesso!`;
+                    }
+                }
+                const disponibilidade = await haConflitoHorario(consulta, novaReuniao._id);
+                console.log('Disponibilidade:', disponibilidade);
             }
         }
 

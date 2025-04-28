@@ -16,7 +16,8 @@ export default {
     },
     async read(req, res) {
         try {
-            const reunioes = await Reuniao.find().populate({
+            const filter = req.query;
+            const reunioes = await Reuniao.find(filter).populate({
                 path: 'organizador',
                 select: 'nome email matricula'
             });;
@@ -40,10 +41,7 @@ export default {
                 const participantes = await Participantes.find({ reuniao: reuniao._id })
                      .populate({ path: 'pessoa', select: 'nome _id' });
                 // Extrair apenas os nomes dos participantes
-                console.log(participantes)
                 const listaParticipantes = participantes.map(p => p.pessoa.nome);
-
-                console.lo
         
                 return res.status(200).json({
                     ...reuniao.toObject(),

@@ -74,7 +74,7 @@ export default {
                         select: 'nome setor _id',
                         populate: {
                             path: 'setor',
-                            populate: { path: 'empresa', select: 'status _id' }
+                            populate: { path: 'empresa', select: 'status _id iniExpediente fimExpediente' }
                         }
                     });
                 if (consulta.length === 0) {

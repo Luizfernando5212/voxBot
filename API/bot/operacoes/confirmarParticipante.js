@@ -1,7 +1,7 @@
 import reuniao from "../../model/reuniao.js";
 import telefone from "../../model/telefone.js";
 import adicionaParticipante from "../operacoes/adicionaParticipante.js";
-import { textMessage } from "../../utll/requestBuilder.js";
+import { textMessage, interactiveMessage } from "../../utll/requestBuilder.js";
 import axios from "axios";
 
 /**
