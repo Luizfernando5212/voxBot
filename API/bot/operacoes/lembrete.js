@@ -34,7 +34,8 @@
 //                     dataHoraInicio: {
 //                         $gte: now,
 //                         $lte: check_10_minutes
-//                     }
+//                     },
+//                     status: "Agendada",
 //                 });
 
 //             if (reunioes.length > 0) {
