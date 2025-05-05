@@ -1,7 +1,8 @@
 import reuniao from "../../model/reuniao.js";
 import telefone from "../../model/telefone.js";
 import adicionaParticipante from "../operacoes/adicionaParticipante.js";
-import { textMessage, interactiveMessage } from "../../utll/requestBuilder.js";
+import { textMessage, interactiveMessage, interactiveListMessage } from "../../utll/requestBuilder.js";
+import haConflitoHorario from './verificaDisponibilidade.js';
 import axios from "axios";
 
 /**
@@ -16,14 +17,15 @@ const confirmarParticipante = async (consulta, numeroTel, mensagem, res) => {
     const reuniaoId = consulta.reuniao._id;
     const reuniaoAtual = await reuniao.findById(reuniaoId);
 
-    console.log(mensagem)
-
     const alteraStatusReuniao = async () => {
         reuniaoAtual.status = 'Agendada';
         reuniaoAtual.save();
-        const tel = await telefone.findOne({ numero: numeroTel });
-        tel.reuniao = null;
-        tel.save();
+        // const tel = await telefone.findOne({ numero: numeroTel });
+        consulta.etapaFluxo = 'INICIAL';
+        consulta.reuniao = null;
+        consulta.save();
+        // tel.reuniao = null;
+        // tel.save();
     }
 
     const callback = async (result, participante = null) => {
@@ -32,8 +34,25 @@ const confirmarParticipante = async (consulta, numeroTel, mensagem, res) => {
             reuniaoAtual.save();
             await axios(textMessage(numeroTel, `${mensagem.list_reply.title} adicionado com sucesso.`));
             if (reuniaoAtual.qtdDuplicados === 0) {
-                alteraStatusReuniao();
-                await axios(textMessage(numeroTel, 'Não há mais participantes com nomes duplicados, reunião agendada.'));
+                // Não há mais participantes com nomes duplicados, verificamos se há conflito de horário
+                const enviaSugestoes = async (haConflito, sugestoes) => {
+                    if (haConflito) {
+                        let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos no mesmo dia:`;
+                        let listaSugestoesHorarios = sugestoes.map(sugestao => {
+                            const horaInicio = format(sugestao.inicio, 'HH:mm', { locale: ptBR });
+                            const horaFim = format(sugestao.fim, 'HH:mm', { locale: ptBR });
+                            return {
+                                id: `${sugestao.inicio} - ${sugestao.fim}`,
+                                nome: `${horaInicio} - ${horaFim}`
+                            };
+                        });
+                        axios(interactiveListMessage(consulta.numero, mensagemSugestoes, listaSugestoesHorarios, 'Sugestões de horário'));
+                    } else {
+                        alteraStatusReuniao();
+                        await axios(textMessage(numeroTel, 'Não há mais participantes com nomes duplicados, reunião agendada.'));
+                    }
+                }
+                await haConflitoHorario(consulta, reuniaoId, enviaSugestoes);
             }
             return res.status(200).json({ message: 'Participante adicionado com sucesso' });
         } else if (result === 'Duplicado') {

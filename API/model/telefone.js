@@ -5,7 +5,7 @@ var TelefoneSchema = new Schema(
         pessoa: { type: Schema.Types.ObjectId, ref: 'Pessoa', required: true },
         codigoArea: { type: String, required: true },
         numero: { type: String, required: true, unique: true },
-        etapaFluxo: { type: String, required: true, default: 'inicial' },
+        etapaFluxo: { type: String, required: true, default: 'INICIAL' },
         reuniao: { type: Schema.Types.ObjectId, ref: 'Reuniao' },
     }
 );

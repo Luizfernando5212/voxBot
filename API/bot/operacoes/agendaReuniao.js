@@ -1,11 +1,12 @@
 import Reuniao from '../../model/reuniao.js';
 import Pessoa from '../../model/pessoa.js';
 import adicionaParticipante from './adicionaParticipante.js';
-import { textMessage, interactiveListMessage } from '../../utll/requestBuilder.js';
+import { textMessage, interactiveListMessage, interactiveMessage } from '../../utll/requestBuilder.js';
 import axios from 'axios';
 import findWithJoinCascade from '../../utll/mongoQuery.js';
 import haConflitoHorario from './verificaDisponibilidade.js';
-
+import { format } from 'date-fns-tz';
+import { ptBR } from 'date-fns/locale';
 
 /**
  * 
@@ -23,13 +24,13 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
     const notificaParticipante = async (result, participante) => {
         if (result === 'Sucesso') {
             const mensagem = `Olá ${participante.pessoa.nome}, você foi convidado para a reunião ${novaReuniao.titulo} no dia ${novaReuniao.dataHoraInicio}.`;
-        if (objReuniao.organizador !== participante._id) {
-            try {
-                await axios(textMessage(participante.numero, mensagem));
-            } catch (error) {
-                console.error('Erro ao enviar mensagem:');
+            if (objReuniao.organizador !== participante._id) {
+                try {
+                    await axios(textMessage(participante.numero, mensagem));
+                } catch (error) {
+                    console.error('Erro ao enviar mensagem:');
+                }
             }
-        }
             console.log('Participante adicionado com sucesso:', participante.pessoa.nome);
         } else {
             console.log('Erro ao adicionar participante:', participante.pessoa.nome);
@@ -55,6 +56,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
             });
         } else {
             let naoEncontrados = [];
+            let listaParticipantes = [];
             let qtdDuplicados = 0;
             for (const nome of nomes) {
                 let participanteDoc = await findWithJoinCascade({
@@ -70,15 +72,16 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                     project: { _id: 1, nome: 1, 'setor.descricao': 1 }
                 });
                 if (participanteDoc.length === 1) {
+                    listaParticipantes.push(nome);
                     await adicionaParticipante(participanteDoc[0], novaReuniao, notificaParticipante);
                 } else if (participanteDoc.length > 1) {
                     // Enviar lista de pessoas com o mesmo nome para o usuário escolher
-                    let listaParticipantes = participanteDoc.map(p => ({
-                    nome: `${p.nome} - ${p.setor.descricao}`,
-                    id: p._id.toString()
-                }));
-                    let mensagem = `Encontramos mais de uma pessoa com o nome ${nome}. Por favor, escolha uma das opções`; 
-                    await axios(interactiveListMessage(consulta.numero, mensagem, listaParticipantes,'Pessoas'));
+                    let participantesDuplicados = participanteDoc.map(p => ({
+                        nome: `${p.nome} - ${p.setor.descricao}`,
+                        id: p._id.toString()
+                    }));
+                    let mensagem = `Encontramos mais de uma pessoa com o nome ${nome}. Por favor, escolha uma das opções`;
+                    await axios(interactiveListMessage(consulta.numero, mensagem, participantesDuplicados, 'Pessoas'));
                     qtdDuplicados++;
                 } else {
                     // Participante não encontrado, nesse caso mandar mensagem para o usuário
@@ -94,23 +97,38 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 novaReuniao.qtdDuplicados = qtdDuplicados;
                 await novaReuniao.save();
                 consulta.reuniao = novaReuniao._id;
+                consulta.etapaFluxo = 'PESSOA_DUPLICADA';
                 await consulta.save();
-                // Atualizar etapaFluxo
             } else {
                 // Validar se todos os participantes possuem disponibilidade
                 const enviaSugestoes = async (haConflito, sugestoes) => {
                     if (haConflito) {
-                        let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos:`;
-                        axios(textMessage(consulta.numero, mensagemSugestoes));
-                        sugestoes.forEach((sugestao, index) => {
-                            mensagemSugestoes += `\n${index + 1}. ${sugestao.inicio} - ${sugestao.fim}`;
+                        let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos no mesmo dia:`;
+                        let listaSugestoesHorarios = sugestoes.map(sugestao => {
+                            const horaInicio = format(sugestao.inicio, 'HH:mm', { locale: ptBR });
+                            const horaFim = format(sugestao.fim, 'HH:mm', { locale: ptBR });
+                            return {
+                                id: `${sugestao.inicio} - ${sugestao.fim}`,
+                                nome: `${horaInicio} - ${horaFim}`
+                            };
                         });
+                        await axios(interactiveListMessage(consulta.numero, mensagemSugestoes, listaSugestoesHorarios, 'Sugestões de horário'));
+                    
+                        consulta.etapaFluxo = 'CONFLITO_HORARIO';
+                        consulta.reuniao = novaReuniao._id;
+                        await consulta.save();
                     } else {
-                        let mensagemSugestoes = `A reunião foi agendada com sucesso!`;
+                        consulta.etapaFluxo = 'CONFIRMACAO';
+                        consulta.reuniao = novaReuniao._id;
+                        console.log(listaParticipantes);
+                        const mensagem = `Gostaria de confirmar a reunião ${novaReuniao.titulo} no dia ${novaReuniao.dataHoraInicio}, com o ${listaParticipantes.join(', ')} ?`;
+                        const botoes = ['Confirmar', 'Cancelar'];
+                        await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
+                        await consulta.save();
                     }
                 }
-                const disponibilidade = await haConflitoHorario(consulta, novaReuniao._id);
-                console.log('Disponibilidade:', disponibilidade);
+
+                await haConflitoHorario(consulta, novaReuniao._id, enviaSugestoes);
             }
         }
 

@@ -4,7 +4,7 @@ import agendaReuniao from "../operacoes/agendaReuniao.js";
 import estruturaMensagemTexto from "../operacoes/estruturaMensagemTexto.js";
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
-    if (consulta.etapaFluxo === 'inicial') {
+    if (consulta.etapaFluxo === 'INICIAL') {
         const resposta = await estruturaMensagemTexto(mensagem);
         if (typeof resposta === "object" && resposta !== null) {
             const respostaString = JSON.stringify(resposta);

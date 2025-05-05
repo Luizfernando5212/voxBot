@@ -1,6 +1,8 @@
 import Reuniao from '../../model/reuniao.js';
 import participantes from '../../model/participantes.js';
 import findWithJoinCascade from '../../utll/mongoQuery.js';
+import { format } from 'date-fns-tz';
+
 
 async function haConflitoHorario(consulta, idReuniao, callback) {
 
@@ -16,12 +18,12 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
         fim: consulta.pessoa.setor.empresa.fimExpediente,
     }
 
-    const reunioesAgendadas = await obterReunioesAgendadas(idsParticipantes, inicio, fim);
-    
     let expedienteInicio = new Date(inicio);
     expedienteInicio.setHours(0, 0, 0, 0); // Define o horário de início do expediente para 00:00:00.000
     let expedienteFim = new Date(fim);
     expedienteFim.setHours(23, 59, 59, 999);
+
+    const reunioesAgendadas = await obterReunioesAgendadas(idsParticipantes, expedienteInicio, expedienteFim);
 
     if (expediente.inicio && expediente.fim) {
         const [horaInicio, minutoInicio] = expediente.inicio.split(":");
@@ -34,8 +36,10 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
     }
 
     const haConflito = reunioesAgendadas.some((r) => {
-        const inicioR = new Date(r.dataHoraInicio);
-        const fimR = new Date(r.dataHoraFim);
+        const novaReuniao = formatarReuniao(r);
+        const inicioR = novaReuniao.dataHoraInicio;
+        const fimR = novaReuniao.dataHoraFim;
+
         return (
             (inicio >= inicioR && inicio < fimR) ||
             (fim > inicioR && fim <= fimR) ||
@@ -45,7 +49,7 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
 
     if (haConflito) {
 
-        const intervalosLivres = calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioesAgendadasOrdenadas);
+        const intervalosLivres = calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioesAgendadas);
         const sugestoesSemConflito = horariosAlternativos(intervalosLivres, duracaoReuniao);
 
         callback(true, sugestoesSemConflito); // Conflito de horário encontrado
@@ -53,6 +57,26 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
         callback(false, []); // Sem conflito de horário
     }
 }
+
+function formatarReuniao(reuniao) {
+    if (reuniao.dataHoraInicio) {
+        reuniao.dataHoraInicio = format(new Date(reuniao.dataHoraInicio), 'yyyy-MM-dd HH:mm:ssXXX', {
+            timeZone: 'America/Sao_Paulo'
+        });
+    }
+    if (reuniao.dataHoraFim) {
+        reuniao.dataHoraFim = format(new Date(reuniao.dataHoraFim), 'yyyy-MM-dd HH:mm:ssXXX', {
+            timeZone: 'America/Sao_Paulo'
+        });
+    }
+
+    return reuniao;
+}
+
+function formatarData(data) {
+    return format(new Date(data), 'yyyy-MM-dd HH:mm:ssXXX', { timeZone: 'America/Sao_Paulo' });
+}
+
 
 async function obterReunioesAgendadas(idsParticipantes, inicio, fim) {
     const participantesReunioes = await findWithJoinCascade({
@@ -65,6 +89,7 @@ async function obterReunioesAgendadas(idsParticipantes, inicio, fim) {
             { 'reuniao.dataHoraInicio': { $gte: inicio, $lt: fim } },
             { 'reuniao.status': 'Agendada' },
         ],
+        convertDates: ['reuniao.dataHoraInicio', 'reuniao.dataHoraFim'],
         project: { 'reuniao._id': 1, 'reuniao.dataHoraInicio': 1, 'reuniao.dataHoraFim': 1 },
     });
 
@@ -110,13 +135,14 @@ function horariosAlternativos(intervalosLivres, duracaoReuniao, maxSugestoes = 5
 
         while (inicioSugestao.getTime() + duracaoReuniao <= intervalo.fim.getTime()) {
             const fimSugestao = new Date(inicioSugestao.getTime() + duracaoReuniao);
-            sugestoes.push({ inicio: new Date(inicioSugestao), fim: fimSugestao });
+
+            sugestoes.push({ inicio: formatarData(new Date(inicioSugestao)), fim: formatarData(fimSugestao) });
 
             if (sugestoes.length >= maxSugestoes) {
                 return sugestoes;
             }
             // Avança para próxima sugestão em 30 min
-            inicioSugestao = new Date(inicioSugestao.getTime() + 30 * 60 * 1000); 
+            inicioSugestao = new Date(inicioSugestao.getTime() + 30 * 60 * 1000);
         }
     }
     return sugestoes;
