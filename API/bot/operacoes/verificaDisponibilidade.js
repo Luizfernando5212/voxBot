@@ -23,7 +23,7 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
     let expedienteFim = new Date(fim);
     expedienteFim.setHours(23, 59, 59, 999);
 
-    const reunioesAgendadas = await obterReunioesAgendadas(idsParticipantes, expedienteInicio, expedienteFim);
+    let reunioesAgendadas = await obterReunioesAgendadas(idsParticipantes, expedienteInicio, expedienteFim);
 
     if (expediente.inicio && expediente.fim) {
         const [horaInicio, minutoInicio] = expediente.inicio.split(":");
@@ -35,15 +35,15 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
         expedienteFim.setHours(parseInt(horaFim), parseInt(minutoFim), 0, 0);
     }
 
-    const haConflito = reunioesAgendadas.some((r) => {
-        const novaReuniao = formatarReuniao(r);
-        const inicioR = novaReuniao.dataHoraInicio;
-        const fimR = novaReuniao.dataHoraFim;
+    reunioesAgendadas = reunioesAgendadas.map((reuniao) => {
+        return formatarReuniao(reuniao);
+    });
 
+    const haConflito = reunioesAgendadas.some((r) => {
         return (
-            (inicio >= inicioR && inicio < fimR) ||
-            (fim > inicioR && fim <= fimR) ||
-            (inicio <= inicioR && fim >= fimR)
+            (inicio >= r.dataHoraInicio && inicio < r.dataHoraFim) ||
+            (fim > r.dataHoraInicio && fim <= r.dataHoraFim) ||
+            (inicio <= r.dataHoraInicio && fim >= r.dataHoraFim)
         );
     });
 
