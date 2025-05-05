@@ -102,7 +102,11 @@ async function obterReunioesAgendadas(idsParticipantes, inicio, fim) {
     return reunioesAgendadas;
 }
 
-function calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioesOrdenadas) {
+function calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioes) {
+    const reunioesOrdenadas = [...reunioes].sort((a, b) => 
+        new Date(a.dataHoraInicio) - new Date(b.dataHoraInicio)
+    );
+
     const livres = [];
     let inicioLivre = new Date(expedienteInicio);
 
