@@ -6,8 +6,6 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
     const reuniaoId = consulta.reuniao._id;
     const reuniaoAtual = await reuniao.findById(reuniaoId);
 
-    console.log('cheguei');
-
     if (reuniaoAtual) {
         if (reuniaoAtual.status === 'Aguardando') {
             const resposta = mensagem.button_reply.id;

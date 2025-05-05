@@ -10,16 +10,12 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
             .populate({ path: 'pessoa', select: 'nome _id' });
         // Extrair apenas os nomes dos participantes
         const listaSemOrganizador = participantes.filter(participante => {
-            console.log(participante.pessoa._id, reuniao.organizador);
-            console.log(participante.pessoa._id !== reuniao.organizador);
             return !participante.pessoa._id.equals(reuniao.organizador);
     });
-        console.log(listaSemOrganizador);
         listaParticipantes = listaSemOrganizador.map(p => p.pessoa.nome);
     }
     consulta.etapaFluxo = 'CONFIRMACAO';
     consulta.reuniao = reuniao._id;
-    console.log(listaParticipantes);
     const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${reuniao.dataHoraInicio.toLocaleString('pt-BR')}, com o ${listaParticipantes.join(', ')} ?`;
     const botoes = [{ id: 'CONFIRMAR', nome: 'Confirmar' }, { id: 'CANCELAR', nome: 'Cancelar' }];
     await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
