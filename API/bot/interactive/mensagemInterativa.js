@@ -10,7 +10,7 @@ const redirecionar = {
             return await confirmarHorario(consulta, numeroTel, mensagem, res);
         }
     },
-    button: async (consulta, numeroTel, mensagem, res) => {
+    button_reply: async (consulta, numeroTel, mensagem, res) => {
         return await confirmarReuniao(consulta, numeroTel, mensagem, res);
     },
 }

@@ -1,5 +1,6 @@
 import reuniao from "../../model/reuniao.js";
-import telefone from "../../model/telefone.js";
+import { textMessage } from "../../utll/requestBuilder.js";
+import mensagemConfirmacao from "./mensagemConfirmacao.js";
 
 
 const confirmarHorario = async (consulta, numeroTel, mensagem, res) => {
@@ -13,11 +14,8 @@ const confirmarHorario = async (consulta, numeroTel, mensagem, res) => {
             const horaFim = new Date(horario[1]);
             reuniaoAtual.dataHoraInicio = horaInicio;
             reuniaoAtual.dataHoraFim = horaFim;
-            reuniaoAtual.status = 'Agendada';
-            consulta.etapaFluxo = 'INICIAL';
-            consulta.reuniao = null;
-            consulta.save();
-            await reuniaoAtual.save();
+
+            mensagemConfirmacao(consulta, reuniaoAtual);
         } else {
             await axios(textMessage(numeroTel, 'Reunião já agendada, não é possível alterar o horário.'));
             return res.status(400).json({ error: 'Reunião já agendada' });

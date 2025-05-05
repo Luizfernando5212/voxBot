@@ -5,6 +5,7 @@ import { textMessage, interactiveListMessage, interactiveMessage } from '../../u
 import axios from 'axios';
 import findWithJoinCascade from '../../utll/mongoQuery.js';
 import haConflitoHorario from './verificaDisponibilidade.js';
+import mensagemConfirmacao from './mensagemConfirmacao.js';
 import { format } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
 
@@ -118,13 +119,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                         consulta.reuniao = novaReuniao._id;
                         await consulta.save();
                     } else {
-                        consulta.etapaFluxo = 'CONFIRMACAO';
-                        consulta.reuniao = novaReuniao._id;
-                        console.log(listaParticipantes);
-                        const mensagem = `Gostaria de confirmar a reunião ${novaReuniao.titulo} no dia ${novaReuniao.dataHoraInicio}, com o ${listaParticipantes.join(', ')} ?`;
-                        const botoes = ['Confirmar', 'Cancelar'];
-                        await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
-                        await consulta.save();
+                        mensagemConfirmacao(consulta, novaReuniao, listaParticipantes);
                     }
                 }
 

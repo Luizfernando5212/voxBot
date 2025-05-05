@@ -1,9 +1,13 @@
 import reuniao from "../../model/reuniao.js";
-import telefone from "../../model/telefone.js";
-import adicionaParticipante from "../operacoes/adicionaParticipante.js";
+import Participantes from "../../model/participantes.js";
+import adicionaParticipante from "./adicionaParticipante.js";
+import mensagemConfirmacao from "./mensagemConfirmacao.js";
 import { textMessage, interactiveMessage, interactiveListMessage } from "../../utll/requestBuilder.js";
+import { format } from "date-fns-tz";
+import { ptBR } from 'date-fns/locale';
 import haConflitoHorario from './verificaDisponibilidade.js';
 import axios from "axios";
+
 
 /**
  * 
@@ -16,17 +20,6 @@ import axios from "axios";
 const confirmarParticipante = async (consulta, numeroTel, mensagem, res) => {
     const reuniaoId = consulta.reuniao._id;
     const reuniaoAtual = await reuniao.findById(reuniaoId);
-
-    const alteraStatusReuniao = async () => {
-        reuniaoAtual.status = 'Agendada';
-        reuniaoAtual.save();
-        // const tel = await telefone.findOne({ numero: numeroTel });
-        consulta.etapaFluxo = 'INICIAL';
-        consulta.reuniao = null;
-        consulta.save();
-        // tel.reuniao = null;
-        // tel.save();
-    }
 
     const callback = async (result, participante = null) => {
         if (result === 'Sucesso' && reuniaoAtual.qtdDuplicados > 0) {
@@ -48,8 +41,7 @@ const confirmarParticipante = async (consulta, numeroTel, mensagem, res) => {
                         });
                         axios(interactiveListMessage(consulta.numero, mensagemSugestoes, listaSugestoesHorarios, 'Sugestões de horário'));
                     } else {
-                        alteraStatusReuniao();
-                        await axios(textMessage(numeroTel, 'Não há mais participantes com nomes duplicados, reunião agendada.'));
+                        mensagemConfirmacao(consulta, reuniaoAtual);
                     }
                 }
                 await haConflitoHorario(consulta, reuniaoId, enviaSugestoes);
@@ -70,8 +62,7 @@ const confirmarParticipante = async (consulta, numeroTel, mensagem, res) => {
             if (reuniaoAtual.qtdDuplicados > 0) {
                 await adicionaParticipante(participante, reuniaoAtual, callback);
             } else {
-                alteraStatusReuniao();
-                await axios(textMessage(numeroTel, 'Reunião já agendada, não é possível adicionar mais participantes.'));
+                mensagemConfirmacao(consulta, reuniaoAtual);
                 return res.status(400).json({ error: 'Reunião já agendada' });
             }
         } else if (reuniaoAtual.status === 'Agendada') {
