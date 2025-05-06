@@ -11,7 +11,8 @@ export default {
     },
     async read(req, res) {
         try {
-            const participantes = await Participantes.find();
+            const filter = req.query;
+            const participantes = await Participantes.find(filter);
             return res.status(200).json(participantes);
         } catch (err) {
             return res.status(400).json({ error: 'Error fetching Participantes' });

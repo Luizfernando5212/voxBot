@@ -119,12 +119,12 @@ export const interactiveMessage = (from, message, buttons, i) => {
                         text: message.body,
                     },
                     action: {
-                        buttons: buttons.map((name, index) => {
+                        buttons: buttons.map((button, index) => {
                             return {
                                 type: "reply",
                                 reply: {
-                                    id: index + i,
-                                    title: name,
+                                    id: button.id,
+                                    title: button.nome.substring(0, 24),
                                 },
                             };
                         })
@@ -154,12 +154,12 @@ export const interactiveMessage = (from, message, buttons, i) => {
                         text: message,
                     },
                     action: {
-                        buttons: buttons.map((name, index) => {
+                        buttons: buttons.map((button, index) => {
                             return {
                                 type: 'reply',
                                 reply: {
-                                    id: index + i,
-                                    title: name
+                                    id: button.id,
+                                    title: button.nome.substring(0, 24),
                                 }
                             }
                         })

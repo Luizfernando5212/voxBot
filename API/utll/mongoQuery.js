@@ -10,6 +10,7 @@ const findWithJoinCascade = async ({
     model,
     joins = [],
     conditions = [],
+    convertDates = [],
     project = null
   }) => {
     const pipeline = [];
@@ -34,6 +35,14 @@ const findWithJoinCascade = async ({
           $and: conditions
         }
       });
+    }
+
+    if (convertDates.length > 0) {
+      const dateFields = {};
+      convertDates.forEach((field) => {
+        dateFields[field] = { $toDate: `$${field}` };
+      });
+      pipeline.push({ $addFields: dateFields });
     }
 
     if (project) {
