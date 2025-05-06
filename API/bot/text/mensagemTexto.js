@@ -2,11 +2,18 @@ import axios from "axios";
 import { textMessage } from '../../utll/requestBuilder.js';
 import agendaReuniao from "../operacoes/agendaReuniao.js";
 import estruturaMensagemTexto from "../operacoes/estruturaMensagemTexto.js";
+import cancelaReuniao from "../operacoes/cancelaReuniao.js";
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
     if (consulta.etapaFluxo === 'INICIAL') {
         const resposta = await estruturaMensagemTexto(mensagem);
         if (typeof resposta === "object" && resposta !== null) {
+            if (resposta.statusCancelado) {
+                console.log("Usuário deseja cancelar a reunião.");
+                await cancelaReuniao(consulta, numeroTel, resposta);
+                return;
+            }
+
             const respostaString = JSON.stringify(resposta);
             try {
                 await agendaReuniao(consulta, resposta, res);
