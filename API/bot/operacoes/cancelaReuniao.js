@@ -1,5 +1,6 @@
 import reuniao from "../../model/reuniao.js";
 import axios from "axios";
+import { textMessage } from '../../utll/requestBuilder.js';
 
 async function cancelaReuniao(consulta, numeroTel, resposta) {
     if (resposta.titulo === '' && resposta.dataHoraInicio === '') {
