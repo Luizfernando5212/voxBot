@@ -8,7 +8,7 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
     if (consulta.etapaFluxo === 'INICIAL') {
         const resposta = await estruturaMensagemTexto(mensagem);
         if (typeof resposta === "object" && resposta !== null) {
-            if (resposta.statusCancelado) {
+            if (resposta.indCancelamento) {
                 console.log("Usuário deseja cancelar a reunião.");
                 await cancelaReuniao(consulta, numeroTel, resposta);
                 return;
