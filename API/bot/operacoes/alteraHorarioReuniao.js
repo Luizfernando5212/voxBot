@@ -62,4 +62,22 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
     }
 }
 
+const buildTemplateAlteraHorario = (titulo, dataHoraInicio, dataHoraFim) => {
+    const template = {
+        name: "notifica_alteracao_horario",
+        language: {
+            code: "pt_BR",
+        },
+        components: [{
+            type: "body",
+            parameters: [
+                {type: "text", text: titulo},
+                {type: "text", text: dataHoraInicio},
+                {type: "text", text: dataHoraFim}
+            ]
+        }]
+    }
+    return template;
+}
+
 export default alteraHorarioReuniao;
