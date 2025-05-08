@@ -5,6 +5,7 @@ import { zodResponseFormat } from 'openai/helpers/zod';
 import OpenAI from 'openai';
 import z from 'zod';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
