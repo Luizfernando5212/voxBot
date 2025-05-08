@@ -5,14 +5,11 @@ import estruturaMensagemTexto from "../operacoes/estruturaMensagemTexto.js";
 import cancelaReuniao from "../operacoes/cancelaReuniao.js";
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
+    let checkCancelaReuniao = await cancelaReuniao(consulta, numeroTel, mensagem)
+
     if (consulta.etapaFluxo === 'INICIAL') {
         const resposta = await estruturaMensagemTexto(mensagem);
         if (typeof resposta === "object" && resposta !== null) {
-            if (resposta.indCancelamento) {
-                console.log("Usuário deseja cancelar a reunião.");
-                await cancelaReuniao(consulta, numeroTel, resposta);
-                return;
-            }
 
             const respostaString = JSON.stringify(resposta);
             try {
