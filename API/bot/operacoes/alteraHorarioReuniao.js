@@ -144,7 +144,6 @@ async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
                     const dataHoraInicio = dayjs.utc(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
                     const dataHoraFim = dayjs.utc(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
 
-                    console.log(tel.numero)
                     await axios(
                         templateMessage(tel.numero
                         , buildTemplateAlteraHorario(reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim)
@@ -170,7 +169,7 @@ async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
  * @returns {Object} - Retorna um objeto template com as informações da reunião
  */
 const buildTemplateAlteraHorario = (titulo, dataHoraInicio, dataHoraFim) => {
-    const template = {
+    return {
         name: "usuario_alterou_horario_reuniao",
         language: {
             code: "pt_BR",
@@ -184,7 +183,6 @@ const buildTemplateAlteraHorario = (titulo, dataHoraInicio, dataHoraFim) => {
             ]
         }]
     }
-    return template;
 }
 
 
