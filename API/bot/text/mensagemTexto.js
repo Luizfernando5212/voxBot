@@ -6,10 +6,10 @@ import cancelaReuniao from "../operacoes/cancelaReuniao.js";
 import alteraHorarioReuniao from "../operacoes/alteraHorarioReuniao.js";
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
-    // let checkCancelaReuniao = await cancelaReuniao(consulta, numeroTel, mensagem);
-    let checkCancelaReuniao = false;
-    let checkAlteraHorarioReuniao = await alteraHorarioReuniao(consulta, numeroTel, mensagem);
+    let checkCancelaReuniao = await cancelaReuniao(consulta, numeroTel, mensagem);
 
+    let checkAlteraHorarioReuniao = await alteraHorarioReuniao(consulta, numeroTel, mensagem);
+    
     if (!checkAlteraHorarioReuniao && !checkCancelaReuniao) {
         if (consulta.etapaFluxo === 'INICIAL') {
             const resposta = await estruturaMensagemTexto(mensagem);
