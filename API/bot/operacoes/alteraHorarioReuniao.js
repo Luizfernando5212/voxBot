@@ -23,23 +23,18 @@ const Evento = z.object({
     indAlteracaoHorario: z.boolean().optional().describe('Deve ser true caso o usuário deseje alterar o horário de uma reunião.'),
 });
 
-
+/**
+ * Função que altera o horário de uma reunião.
+ * 
+ * @param {Object} consulta - Objeto que contém as informações da reunião
+ * @param {String} numeroTel - Número de telefone do usuário
+ * @param {String} texto - Mensagem recebida do usuário
+ * @returns {Boolean} - Retorna true caso o assunto seja referente a alteração de horário, false caso contrário.
+ * @throws {Error} - Lança um erro caso não consiga alterar o horário
+ */
 async function alteraHorarioReuniao(consulta, numeroTel, texto){
     try {
-        let responseFormat = zodResponseFormat(Evento, 'evento');
-        const reuniao_alterada = await openai.beta.chat.completions.parse({
-            model: 'gpt-4o-mini-2024-07-18',
-            messages: [
-                { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, não produza informações.' +
-                    ' dataHoraInicio, é uma informação obrigatória, mantenha o horário informado pelo usuário sempre com o Z no final.' +
-                    ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, mantenha o horário informado pelo usuário sempre com o Z no final.' +
-                    ' novoHorarioFim é uma informação obrigatório, pois se refere ao novo horário de fim para a reunião, mantenha o horário informado pelo usuário sempre com o Z no final.' +
-                    ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' },
-                { role: 'user', content: texto },
-            ],
-            response_format: responseFormat,
-        });
-        let resultado = reuniao_alterada.choices[0].message.parsed;
+        let resultado = await promptAlteracaoHorario(texto);
         if (!resultado.indAlteracaoHorario) {
             console.log("Não quer alterar o horário")
             return false;
@@ -77,6 +72,8 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
 
                 reuniao_encontrada.dataHoraInicio = resultado.novoHorarioInicio
                 reuniao_encontrada.dataHoraFim = resultado.novoHorarioFim
+                console.log(reuniao_encontrada.dataHoraInicio, reuniao_encontrada.dataHoraFim)
+
                 await reuniao_encontrada.save()
                 await enviaNotificacaoAlteracaoHorario(reuniao_encontrada);
                 return true;
@@ -91,12 +88,36 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
     }
 }
 
+/**
+ * Função que constrói o prompt para o OpenAI, com as informações necessárias para alterar o horário da reunião.
+ * 
+ * @param {String} texto - Mensagem recebida do usuário
+ * @returns {Object} - Objeto com as informações extraídas do texto
+ */
+async function promptAlteracaoHorario(texto) {
+    let responseFormat = zodResponseFormat(Evento, 'evento');
+    const reuniao_alterada = await openai.beta.chat.completions.parse({
+        model: 'gpt-4o-mini-2024-07-18',
+        messages: [
+            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, não produza informações.' +
+                ' dataHoraInicio, é uma informação obrigatória, mantenha o horário informado pelo usuário sempre com o Z no final.' +
+                ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, mantenha o horário informado pelo usuário sempre com o Z no final.' +
+                ' novoHorarioFim é uma informação obrigatório, pois se refere ao novo horário de fim para a reunião, mantenha o horário informado pelo usuário sempre com o Z no final.' +
+                ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' },
+            { role: 'user', content: texto },
+        ],
+        response_format: responseFormat,
+    });
+    let resultado = reuniao_alterada.choices[0].message.parsed;
+    return resultado;
+}
+
 
 /**
  * A função enviaNotificacaoAlteracaoHorario envia uma notificação de alteração de horário de reunião para os participantes.
  * 
  * @param {Object} reuniao_encontrada - Objeto que contém os dados da reunião encontrada
- * 
+ * @throws {Error} - Lança um erro caso não consiga enviar a notificação
  * @returns {Promise<void>} - Promise que resolve quando a notificação é enviada
  */
 async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
@@ -123,6 +144,7 @@ async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
                     const dataHoraInicio = dayjs.utc(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
                     const dataHoraFim = dayjs.utc(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
 
+                    console.log(tel.numero)
                     await axios(
                         templateMessage(tel.numero
                         , buildTemplateAlteraHorario(reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim)
@@ -149,7 +171,7 @@ async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
  */
 const buildTemplateAlteraHorario = (titulo, dataHoraInicio, dataHoraFim) => {
     const template = {
-        name: "notifica_alteracao_horario",
+        name: "usuario_alterou_horario_reuniao",
         language: {
             code: "pt_BR",
         },
