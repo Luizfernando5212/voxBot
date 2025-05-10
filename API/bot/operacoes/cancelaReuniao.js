@@ -34,11 +34,11 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
         
         if (!resultado.indCancelamento) {
             console.log("Não quer cancelar")
-            return;
+            return false;
         } else if (resultado.dataHoraInicio === '') {
             console.log('Usuário não informou a data/hora da reunião.');
             await axios(textMessage(numeroTel, 'Informe a data/hora da reunião que deseja cancelar.'));
-            return;
+            return true;
         } else {
             const reuniao_encontrada = await reuniao.findOne({
                 // titulo: resposta.titulo,
@@ -50,15 +50,17 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
             if (reuniao_encontrada === null) {
                 console.log('Reunião não encontrada ou já cancelada.');
                 await axios(textMessage(numeroTel, 'Reunião não encontrada ou já cancelada.'));
-                return;
+                return true;
             }
 
             console.log(reuniao_encontrada)
             reuniao_encontrada.status = 'Cancelada';
             await reuniao_encontrada.save()
+            return true;
         }
     } catch (error) {
         console.error('Erro ao cancelar reunião:', error);
+        return true;
     }
 }
 
