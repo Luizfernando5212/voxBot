@@ -59,8 +59,10 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
 
             reuniao_encontrada.status = 'Cancelada';
             await reuniao_encontrada.save()
+            consulta.etapaFluxo = 'INICIAL';
+            consulta.reuniao = null;
+            await consulta.save();
             await enviaNotificacaoReuniaoCancelada(reuniao_encontrada);
-            
             return true;
         }
     } catch (error) {

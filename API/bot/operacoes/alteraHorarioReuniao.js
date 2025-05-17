@@ -72,9 +72,11 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
 
                 reuniao_encontrada.dataHoraInicio = resultado.novoHorarioInicio
                 reuniao_encontrada.dataHoraFim = resultado.novoHorarioFim
-                console.log(reuniao_encontrada.dataHoraInicio, reuniao_encontrada.dataHoraFim)
+                consulta.etapaFluxo = 'INICIAL';
+                consulta.reuniao = null;
 
                 await reuniao_encontrada.save()
+                await consulta.save();
                 await enviaNotificacaoAlteracaoHorario(reuniao_encontrada);
                 return true;
             } catch (error) {
