@@ -3,7 +3,6 @@ import Participantes from '../../model/participantes.js';
 import { interactiveMessage } from '../../utll/requestBuilder.js';
 
 const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) => {
-
     if (listaParticipantes.length === 0) {
         // Buscar participantes relacionados à reunião
         const participantes = await Participantes.find({ reuniao: reuniao._id })
@@ -14,12 +13,16 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
     });
         listaParticipantes = listaSemOrganizador.map(p => p.pessoa.nome);
     }
-    consulta.etapaFluxo = 'CONFIRMACAO';
-    consulta.reuniao = reuniao._id;
-    const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${reuniao.dataHoraInicio.toLocaleString('pt-BR')}, com o ${listaParticipantes.join(', ')} ?`;
-    const botoes = [{ id: 'CONFIRMAR', nome: 'Confirmar' }, { id: 'CANCELAR', nome: 'Cancelar' }];
-    await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
-    await consulta.save();
+    if (reuniao.stataus === 'Aguardando') {
+        consulta.etapaFluxo = 'CONFIRMACAO';
+        consulta.reuniao = reuniao._id;
+        const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${reuniao.dataHoraInicio.toLocaleString('pt-BR')}, com: ${listaParticipantes.join(', ')} ?`;
+        const botoes = [{ id: 'CONFIRMAR', nome: 'Confirmar' }, { id: 'CANCELAR', nome: 'Cancelar' }];
+        await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
+        await consulta.save();
+    } else {
+       null;
+    }
 }
 
 export default mensagemConfirmacao;

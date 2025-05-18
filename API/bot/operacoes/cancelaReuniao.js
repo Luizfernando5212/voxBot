@@ -2,8 +2,7 @@ import reuniao from "../../model/reuniao.js";
 import participantes from "../../model/participantes.js";
 import telefones from '../../model/telefone.js';
 import axios from "axios";
-import { textMessage } from '../../utll/requestBuilder.js';
-import { templateMessage } from '../../utll/requestBuilder.js';
+import { textMessage, templateMessage } from '../../utll/requestBuilder.js';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import OpenAI from 'openai';
 import z from 'zod';
@@ -36,12 +35,25 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
     try {
         let resultado = await promptCancelaReuniao(texto);
 
+        console.log(resultado)
+
         if (!resultado.indCancelamento) {
             console.log("Não quer cancelar")
             return false;
         } else if (resultado.dataHoraInicio === '') {
-            console.log('Usuário não informou a data/hora da reunião.');
-            await axios(textMessage(numeroTel, 'Informe a data/hora da reunião que deseja cancelar.'));
+            if(consulta.etapaFluxo !== 'INICIAL' && consulta.reuniao !== null) {
+                const reuniao_atual = await reuniao.findById(consulta.reuniao);
+                reuniao_atual.status = 'Cancelada';
+                await reuniao_atual.save();
+                
+                consulta.etapaFluxo = 'INICIAL';
+                consulta.reuniao = null;
+                await consulta.save();
+                await axios(textMessage(numeroTel, 'Reunião cancelada com sucesso!'));
+            } else {
+                console.log('Usuário não informou a data/hora da reunião.');
+                await axios(textMessage(numeroTel, 'Informe a data/hora da reunião que deseja cancelar.'));
+            }
             return true;
         } else {
             const reuniao_encontrada = await reuniao.findOne({
@@ -84,7 +96,7 @@ async function promptCancelaReuniao(texto) {
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
             { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário quer cancelar uma reunião, não produza informações, hoje é dia ' + new Date() +
-                ' dataHoraInicio, é uma informação obrigatória.' +
+                ' e o usuário pode informar a dataHoraInicio da reunião que deseja cancelar, ou não informar nada.' +
                 ' indCancelamento diz se o usuário está querendo cancelar uma reunião.' },
             { role: 'user', content: texto },
         ],

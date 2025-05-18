@@ -27,7 +27,28 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
                 await axios(textMessage(numeroTel, resposta));
                 res.status(200).json({ message: 'Message sent successfully' });
             }
+        } else {
+            let msg;
+            switch (consulta.etapaFluxo) {
+                case 'PESSOA_DUPLICADA': 
+                    msg = 'Vocês possui uma reunião em agendamento, está na etapa de escolher o participante correto. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
+                    await axios(textMessage(numeroTel, msg));
+
+                    break;
+                case 'CONFLITO_HORARIO': 
+                    msg = 'Você possui uma reunião em agendamento, está na etapa de escolher o horário correto. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
+                    await axios(textMessage(numeroTel, msg));
+                    break;
+                case 'CONFIRMACAO':
+                    msg = 'Você possui uma reunião em agendamento, está na etapa de confirmação. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
+                    await axios(textMessage(numeroTel, msg));
+                    break;
+                default: break;
+            }
+            res.status(200).json({ message: 'Message sent successfully' });
         }
+    } else {
+        res.status(200).json({ message: 'Reunião cancelada ou horário alterado com sucesso!' });
     }
 }
 

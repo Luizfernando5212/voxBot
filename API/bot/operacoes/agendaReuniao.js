@@ -39,7 +39,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
     }
     try {
         // adicionando o organizador da reunião
-        await adicionaParticipante(consulta.pessoa, novaReuniao, notificaParticipante);
+        await adicionaParticipante(consulta.pessoa, novaReuniao);
     } catch (error) {
         console.log('Erro ao adicionar organizador:', error);
         return res.status(400).json({ error: 'Erro ao adicionar organizador' });
@@ -53,7 +53,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 return;
             }
             participantes.forEach(async (participante) => {
-                await adicionaParticipante(participante, novaReuniao, notificaParticipante);
+                await adicionaParticipante(participante, novaReuniao);
             });
         } else {
             let naoEncontrados = [];
@@ -74,7 +74,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 });
                 if (participanteDoc.length === 1) {
                     listaParticipantes.push(nome);
-                    await adicionaParticipante(participanteDoc[0], novaReuniao, notificaParticipante);
+                    await adicionaParticipante(participanteDoc[0], novaReuniao);
                 } else if (participanteDoc.length > 1) {
                     // Enviar lista de pessoas com o mesmo nome para o usuário escolher
                     let participantesDuplicados = participanteDoc.map(p => ({

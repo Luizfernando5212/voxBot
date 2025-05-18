@@ -14,7 +14,7 @@ const confirmarHorario = async (consulta, numeroTel, mensagem, res) => {
             const horaFim = new Date(horario[1]);
             reuniaoAtual.dataHoraInicio = horaInicio;
             reuniaoAtual.dataHoraFim = horaFim;
-
+            await reuniaoAtual.save();
             mensagemConfirmacao(consulta, reuniaoAtual);
         } else {
             await axios(textMessage(numeroTel, 'Reunião já agendada, não é possível alterar o horário.'));
