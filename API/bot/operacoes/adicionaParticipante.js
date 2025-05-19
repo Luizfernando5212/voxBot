@@ -17,7 +17,7 @@ const adicionaParticipante = async (participante, reuniao, cb) => {
     const novoParticipante = {
         pessoa: participanteId,
         reuniao: reuniaoId,
-        conviteAceito: true
+        conviteAceito: false
     }
     const participanteDoc = new participantes(novoParticipante);
 

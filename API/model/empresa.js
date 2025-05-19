@@ -1,4 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
+import bcrypt from 'bcrypt';
+// let bcrypt = require('bcrypt');
+
+const SALT_WORK_FACTOR = 10;
+// const MAX_LOGIN_ATTEMPTS = 6;
+// const LOCK_TIME = 2 * 60 * 60 * 1000;
 
 var EmpresaSchema = new Schema(
     {
@@ -7,6 +13,8 @@ var EmpresaSchema = new Schema(
             partialFilterExpression: {cnpj: {$type: "string"}}
         } },
         razaoSocial: { type: String, required: true },
+        email: { type: String, required: true, trim: true, lowercase: true },
+        password: { type: String },
         qtdFuncionarios: { type: Number, required: true, default: 0 },
         status: { type: String, enum: ['A', 'I'], required: true, default: 'I' },
         dataIniCompetencia: { type: Date, required: true, default: Date.now },
@@ -15,5 +23,55 @@ var EmpresaSchema = new Schema(
         fimExpediente: { type: String, required: false },
     }
 );
+
+
+EmpresaSchema.pre('save', function (next) {
+    let empresa = this;
+
+    if (empresa.password) {
+        if (!empresa.isModified('password')){
+            return next();
+        }
+            
+        bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
+            if (err) return next(err);
+
+            bcrypt.hash(empresa.password, salt, (err, hash) => {
+                if (err) return next(err);
+
+                empresa.password = hash;
+                next();
+            });
+        });
+    } else {
+        empresa.password = '1234';
+
+        if (!empresa.isModified('password'))
+            return next();
+
+        bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
+            if (err) return next(err);
+
+            bcrypt.hash(empresa.password, salt, (err, hash) => {
+                if (err) return next(err);
+
+                empresa.password = hash;
+                next();
+            });
+        })
+    }
+});
+
+EmpresaSchema.methods.comparePassword = async function (password) {
+    try {
+        const isMatch = await bcrypt.compare(password, this.password);
+        return isMatch;
+    } catch (err) {
+        console.log(err);
+    }
+    return false;
+}
+
+
 
 export default mongoose.model('Empresa', EmpresaSchema);

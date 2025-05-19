@@ -25,37 +25,42 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
 
     let reunioesAgendadas = await obterReunioesAgendadas(idsParticipantes, expedienteInicio, expedienteFim);
 
-    if (expediente.inicio && expediente.fim) {
-        const [horaInicio, minutoInicio] = expediente.inicio.split(":");
-        expedienteInicio = new Date(inicio);
-        expedienteInicio.setHours(parseInt(horaInicio), parseInt(minutoInicio), 0, 0);
-
-        const [horaFim, minutoFim] = expediente.fim.split(":");
-        expedienteFim = new Date(fim);
-        expedienteFim.setHours(parseInt(horaFim), parseInt(minutoFim), 0, 0);
-    }
-
-    reunioesAgendadas = reunioesAgendadas.map((reuniao) => {
-        return formatarReuniao(reuniao);
-    });
-
-    const haConflito = reunioesAgendadas.some((r) => {
-        return (
-            (inicio >= r.dataHoraInicio && inicio < r.dataHoraFim) ||
-            (fim > r.dataHoraInicio && fim <= r.dataHoraFim) ||
-            (inicio <= r.dataHoraInicio && fim >= r.dataHoraFim)
-        );
-    });
-
-    if (haConflito) {
-
-        const intervalosLivres = calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioesAgendadas);
-        const sugestoesSemConflito = horariosAlternativos(intervalosLivres, duracaoReuniao);
-
-        callback(true, sugestoesSemConflito); // Conflito de horário encontrado
+    if (reunioesAgendadas.length > 0) {
+        if (expediente.inicio && expediente.fim) {
+            const [horaInicio, minutoInicio] = expediente.inicio.split(":");
+            expedienteInicio = new Date(inicio);
+            expedienteInicio.setHours(parseInt(horaInicio), parseInt(minutoInicio), 0, 0);
+    
+            const [horaFim, minutoFim] = expediente.fim.split(":");
+            expedienteFim = new Date(fim);
+            expedienteFim.setHours(parseInt(horaFim), parseInt(minutoFim), 0, 0);
+        }
+    
+        reunioesAgendadas = reunioesAgendadas.map((reuniao) => {
+            return formatarReuniao(reuniao);
+        });
+    
+        const haConflito = reunioesAgendadas.some((r) => {
+            return (
+                (inicio >= r.dataHoraInicio && inicio < r.dataHoraFim) ||
+                (fim > r.dataHoraInicio && fim <= r.dataHoraFim) ||
+                (inicio <= r.dataHoraInicio && fim >= r.dataHoraFim)
+            );
+        });
+    
+        if (haConflito) {
+    
+            const intervalosLivres = calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioesAgendadas);
+            const sugestoesSemConflito = horariosAlternativos(intervalosLivres, duracaoReuniao);
+    
+            callback(true, sugestoesSemConflito); // Conflito de horário encontrado
+        } else {
+            callback(false, []); // Sem conflito de horário
+        }
     } else {
-        callback(false, []); // Sem conflito de horário
+        callback(false, []); // Sem reuniões agendadas
     }
+    
 }
 
 function formatarReuniao(reuniao) {

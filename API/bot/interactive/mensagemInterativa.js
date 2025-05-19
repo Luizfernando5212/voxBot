@@ -13,10 +13,12 @@ const redirecionar = {
     button_reply: async (consulta, numeroTel, mensagem, res) => {
         return await confirmarReuniao(consulta, numeroTel, mensagem, res);
     },
+    button: async (consulta, numeroTel, mensagem, res) => {
+        return await confirmarReuniao(consulta, numeroTel, mensagem.button, res);
+    }
 }
 
 const mensagemInterativa = async (consulta, numeroTel, mensagem, res) => {
-    console.log(mensagem)
     redirecionar[mensagem.type](consulta, numeroTel, mensagem, res);
 }
 

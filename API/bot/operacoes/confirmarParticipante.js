@@ -30,6 +30,8 @@ const confirmarParticipante = async (consulta, numeroTel, mensagem, res) => {
                 // Não há mais participantes com nomes duplicados, verificamos se há conflito de horário
                 const enviaSugestoes = async (haConflito, sugestoes) => {
                     if (haConflito) {
+                        consulta.etapaFluxo = 'CONFLITO_HORARIO';
+                        consulta.save();
                         let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos no mesmo dia:`;
                         let listaSugestoesHorarios = sugestoes.map(sugestao => {
                             const horaInicio = format(sugestao.inicio, 'HH:mm', { locale: ptBR });

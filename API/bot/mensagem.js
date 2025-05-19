@@ -13,6 +13,9 @@ const redirecionar = {
     interactive: async (consulta, objetoMensagem, res) => {
         return await interactive(consulta, objetoMensagem.from, objetoMensagem.interactive, res);
     },
+    button: async (consulta, objetoMensagem, res) => {
+        return await interactive(consulta, objetoMensagem.from, objetoMensagem, res);
+    },
 } 
 
 /**
@@ -23,8 +26,6 @@ const redirecionar = {
  * @returns 
  */
 const mensagem = async (consulta, objeto, res) =>  {
-    console.log(objeto);
-    console.log(objeto.interactive)
     return await redirecionar[objeto.type](consulta, objeto, res);
 }
 

@@ -22,21 +22,6 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
     let nomes = objReuniao.participantes;
     const setor = objReuniao.setor;
 
-    const notificaParticipante = async (result, participante) => {
-        if (result === 'Sucesso') {
-            const mensagem = `Olá ${participante.pessoa.nome}, você foi convidado para a reunião ${novaReuniao.titulo} no dia ${novaReuniao.dataHoraInicio}.`;
-            if (objReuniao.organizador !== participante._id) {
-                try {
-                    await axios(textMessage(participante.numero, mensagem));
-                } catch (error) {
-                    console.error('Erro ao enviar mensagem:');
-                }
-            }
-            console.log('Participante adicionado com sucesso:', participante.pessoa.nome);
-        } else {
-            console.log('Erro ao adicionar participante:', participante.pessoa.nome);
-        }
-    }
     try {
         // adicionando o organizador da reunião
         await adicionaParticipante(consulta.pessoa, novaReuniao);

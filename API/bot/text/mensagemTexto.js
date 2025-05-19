@@ -4,18 +4,33 @@ import agendaReuniao from "../operacoes/agendaReuniao.js";
 import estruturaMensagemTexto from "../operacoes/estruturaMensagemTexto.js";
 import cancelaReuniao from "../operacoes/cancelaReuniao.js";
 import alteraHorarioReuniao from "../operacoes/alteraHorarioReuniao.js";
+import verificaOperacao from "../operacoes/verificaOperacaoTxt.js";
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
-    let checkCancelaReuniao = await cancelaReuniao(consulta, numeroTel, mensagem);
-
-    let checkAlteraHorarioReuniao = await alteraHorarioReuniao(consulta, numeroTel, mensagem);
+    let checkCancelaReuniao = true;
+    let checkAlteraHorarioReuniao = true;
     
+    await verificaOperacao(mensagem).then(async (resposta) => {
+        if (resposta.tipoMensagem === 'CANCELAR') {
+            checkCancelaReuniao = await cancelaReuniao(consulta, numeroTel, mensagem);
+        } else if (resposta.tipoMensagem === 'ALTERAR') {
+            checkAlteraHorarioReuniao = await alteraHorarioReuniao(consulta, numeroTel, mensagem);
+        } else if (resposta.tipoMensagem === 'AGENDAR' || resposta.tipoMensagem === 'NDA') {
+            checkAlteraHorarioReuniao = false;
+            checkCancelaReuniao = false;
+        }
+    }).catch((err) => {
+        console.log(err);
+        checkAlteraHorarioReuniao = false;
+        checkCancelaReuniao = false;
+    });
+
     if (!checkAlteraHorarioReuniao && !checkCancelaReuniao) {
         if (consulta.etapaFluxo === 'INICIAL') {
             const resposta = await estruturaMensagemTexto(mensagem);
             if (typeof resposta === "object" && resposta !== null) {
 
-                const respostaString = JSON.stringify(resposta);
+                // const respostaString = JSON.stringify(resposta);
                 try {
                     await agendaReuniao(consulta, resposta, res);
                     // await axios(textMessage(numeroTel, respostaString));

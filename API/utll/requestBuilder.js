@@ -267,8 +267,28 @@ export const templateMessage = (from, template) => {
             recipient_type: "individual",
             to: from,
             type: "template",
-            template: template,
+            template: buildTemplate(template.nome, template.parameters),
         },
     }
     return body;
+}
+
+/**
+ * A função buildTemplate cria um template para enviar ao usuário.
+ * 
+ * @param {String} nome - nome do template salvo do WhatsApp
+ * @param {Array} parameters - Lista de parâmetros a serem passados para o template
+ * @returns {Object} - Retorna um objeto template do template
+ */
+const buildTemplate = (nome, parameters) => {
+    return {
+        name: nome,
+        language: {
+            code: "pt_BR",
+        },
+        components: [{
+            type: "body",
+            parameters: parameters.map((p) => ({type: "text", text: p}))
+        }]
+    }
 }
