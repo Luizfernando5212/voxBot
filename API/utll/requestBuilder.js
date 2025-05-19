@@ -3,8 +3,6 @@ import { url } from './urls.js';
 
 dotenv.config();
 
-// require('dotenv').config();
-// const facebook = require('./urls');
 const token = process.env.WHATSAPP_TOKEN;
 const phoneNumber = process.env.PHONE_NUMBER_ID;
 
@@ -130,8 +128,6 @@ export const interactiveMessage = (from, message, buttons, i) => {
                         })
                     },
                 },
-
-                // text: { body: "Ack: " + followUp },
             },
         }
         return body;

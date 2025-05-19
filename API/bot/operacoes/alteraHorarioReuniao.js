@@ -53,7 +53,6 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
                 }
 
                 const reuniao_encontrada = await reuniao.findOne({
-                    // titulo: resposta.titulo,
                     dataHoraInicio: dates.novoHorarioInicio,
                     status: 'Agendada',
                     "organizador": consulta.pessoa._id

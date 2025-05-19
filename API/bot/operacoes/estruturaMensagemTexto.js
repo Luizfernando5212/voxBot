@@ -73,7 +73,6 @@ async function estruturaMensagemTexto(texto) {
         }
     } catch (err) {
         console.log(err);
-        // null
     }
 }
 
