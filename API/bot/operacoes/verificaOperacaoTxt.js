@@ -24,7 +24,7 @@ async function verificaOperacao(texto) {
             model: 'gpt-4o-mini-2024-07-18',
             messages: [
                 { role: 'system', content: 'Você deve identificar qual é o tipo de operação, relativa a uma reunião, o usuário está tentando fazer,' +
-                    'Cancelar, alterar, agendar ou listar, uma reunião. Caso não seja possível identificar, retorne "NDA".'
+                    'Cancelar, alterar, agendar ou listar/verificar, uma reunião. Caso não seja possível identificar, retorne "NDA".'
                  },
                 { role: 'user', content: texto },
             ],
