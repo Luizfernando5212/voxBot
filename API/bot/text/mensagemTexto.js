@@ -10,6 +10,7 @@ import listaReuniao from "../operacoes/listaReuniao.js";
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
     let checkCancelaReuniao = true;
     let checkAlteraHorarioReuniao = true;
+    let checkListarReuniao = true;
     
     await verificaOperacao(mensagem).then(async (resposta) => {
         if (resposta.tipoMensagem === 'CANCELAR') {
@@ -21,6 +22,7 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
         } else if (resposta.tipoMensagem === 'AGENDAR' || resposta.tipoMensagem === 'NDA') {
             checkAlteraHorarioReuniao = false;
             checkCancelaReuniao = false;
+            checkListarReuniao = false;
         }
     }).catch((err) => {
         console.log(err);
@@ -28,7 +30,7 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
         checkCancelaReuniao = false;
     });
 
-    if (!checkAlteraHorarioReuniao && !checkCancelaReuniao) {
+    if (!checkAlteraHorarioReuniao && !checkCancelaReuniao && !checkListarReuniao) {
         if (consulta.etapaFluxo === 'INICIAL') {
             const resposta = await estruturaMensagemTexto(mensagem);
             if (typeof resposta === "object" && resposta !== null) {
