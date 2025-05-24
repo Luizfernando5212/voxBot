@@ -11,7 +11,7 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
     let checkCancelaReuniao = true;
     let checkAlteraHorarioReuniao = true;
     let checkListarReuniao = true;
-    
+
     await verificaOperacao(mensagem).then(async (resposta) => {
         if (resposta.tipoMensagem === 'CANCELAR') {
             checkCancelaReuniao = await cancelaReuniao(consulta, numeroTel, mensagem);
@@ -66,7 +66,7 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
             res.status(200).json({ message: 'Message sent successfully' });
         }
     } else {
-        res.status(200).json({ message: 'Reunião cancelada ou horário alterado com sucesso!' });
+        res.status(200).json({ message: 'Reunião cancelada ou horário alterado ou listagem realizada com sucesso!' });
     }
 }
 

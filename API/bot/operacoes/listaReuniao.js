@@ -16,21 +16,37 @@ dotenv.config();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const Evento = z.object({
+    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDT00:00:00Z)'),
     indListaReuniao: z.boolean().optional().describe('Deve ser true caso o usuário queira listar ou verificar suas reuniões.'),
 });
 
 
 async function listaReuniao(consulta, numeroTel, texto) {
     try{
+        let reunioes_encontradas;
         let resultado = await promptListarReuniaso(texto);
         if (!resultado.indListaReuniao) {
             console.log("Não deseja verificar reuniões.");
             return false;
         }
-        const reunioes_encontradas = await reuniao.find({
+        if (resultado.dataHoraInicio !== '') {
+            let dataHoraFim = dayjs.utc(resultado.dataHoraInicio).set('hour', 23).set('minute', 59).set('second', 59).toISOString();
+            reunioes_encontradas = await reuniao.find({
+                dataHoraInicio: { $gte: new Date(resultado.dataHoraInicio), $lte: new Date(dataHoraFim) },
                 status: 'Agendada',
                 "organizador": consulta.pessoa._id
-        })
+            });
+        } else {
+            reunioes_encontradas = await reuniao.find({
+                    status: 'Agendada',
+                    "organizador": consulta.pessoa._id
+            })
+        }
+        console.log(resultado)
+        consulta.etapaFluxo = 'INICIAL';
+        consulta.reuniao = null;
+        await consulta.save();
+        
         const mensagem = formatarListaReunioes(reunioes_encontradas);
         await axios(textMessage(numeroTel, mensagem));
         return true;
@@ -50,8 +66,9 @@ async function promptListarReuniaso(texto) {
     const reuniao_cancelada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            { role: 'system', content: 'Verifique se o usuário deseja listar ou verificar suas respectivas reuniões, não produza informações. ' +
-                ' indListaReuniao diz se o usuário está querendo listar ou verificar suas respectivas reuniões.' },
+            { role: 'system', content: 'Verifique se o usuário deseja listar/verificar suas respectivas reuniões, não produza informações, hoje é dia ' + new Date() +
+                ' dataHoraInicio deve ser a data e hora do dia em que o usuário deseja listar as reuniões, caso ele não forneça data, não preencha esse campo.' +
+                ' indListaReuniao diz se o usuário está querendo listar/verificar suas reuniões.' },
             { role: 'user', content: texto },
         ],
         response_format: responseFormat,
@@ -68,7 +85,7 @@ function formatarListaReunioes(reunioes) {
     let mensagem = "*Suas reuniões agendadas:*\n\n";
     reunioes.forEach((r, i) => {
         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
-        mensagem += `   🕒 *Data:* ${dayjs.utc(r.dataHoraInicio).format("DD/MM/YYYY [às] HH:mm")}\n`;
+        mensagem += `   🕒 *Data:* ${dayjs.utc(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm")}, ${dayjs.utc(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm")}\n\n`;
     });
     return mensagem.trim();
 }
