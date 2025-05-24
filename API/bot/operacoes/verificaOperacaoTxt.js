@@ -9,7 +9,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Objeto de validação do evento utilizando o Zod
 const Evento = z.object({
-    tipoMensagem: z.string().describe('Deve ser preenchido com um dos sequintes ["CANCELAR", "ALTERAR", "AGENDAR", "NDA"]'),
+    tipoMensagem: z.string().describe('Deve ser preenchido com um dos sequintes ["CANCELAR", "ALTERAR", "AGENDAR", "LISTAR", "NDA"]'),
 });
 
 /**
@@ -24,7 +24,7 @@ async function verificaOperacao(texto) {
             model: 'gpt-4o-mini-2024-07-18',
             messages: [
                 { role: 'system', content: 'Você deve identificar qual é o tipo de operação, relativa a uma reunião, o usuário está tentando fazer,' +
-                    'Cancelar, alterar ou agendar uma reunião. Caso não seja possível identificar, retorne "NDA".'
+                    'Cancelar, alterar, agendar ou listar, uma reunião. Caso não seja possível identificar, retorne "NDA".'
                  },
                 { role: 'user', content: texto },
             ],
