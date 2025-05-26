@@ -4,7 +4,7 @@ import Signup from './pages/Signup';
 import Empresa from './pages/Empresa';
 import Funcionario from './pages/Funcionario';
 import Setor from './pages/Setor';
-import Planos from './pages/Planos';
+import React from 'react';
 import PrivateRoute from './routes/PrivateRoute';
 
 function App() {

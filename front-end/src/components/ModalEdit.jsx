@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function ModalEdit({ visible, title, fields, data, onChange, onClose, onSubmit }) {
   if (!visible) return null;
 

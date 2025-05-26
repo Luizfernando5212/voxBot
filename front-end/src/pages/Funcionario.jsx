@@ -1,6 +1,6 @@
 import '../styles/styles.css';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 import Nav from '../components/Nav';
@@ -95,7 +95,7 @@ export default function Funcionario() {
       setShowModal(false);
       alert(`Funcionário ${editMode === 'edit' ? 'atualizada' : 'cadastrada'} com sucesso!`);
     } catch (error) {
-      alert('Erro ao cadastrar empresa: ' + error.message);
+      alert('Erro ao cadastrar funcionário: ' + error.message);
     }
   };
 

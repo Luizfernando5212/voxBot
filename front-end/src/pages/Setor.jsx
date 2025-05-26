@@ -1,6 +1,6 @@
 import '../styles/styles.css';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 import Nav from '../components/Nav';
@@ -68,9 +68,9 @@ export default function Setor() {
       }
 
       setShowModal(false);
-      alert(`Funcionário ${editMode === 'edit' ? 'atualizada' : 'cadastrada'} com sucesso!`);
+      alert(`Setor ${editMode === 'edit' ? 'atualizada' : 'cadastrada'} com sucesso!`);
     } catch (error) {
-      alert('Erro ao cadastrar empresa: ' + error.message);
+      alert('Erro ao cadastrar setor: ' + error.message);
     }
   };
 
@@ -117,7 +117,7 @@ export default function Setor() {
             <tbody>
               {setores.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center' }}>Nenhum funcionário encontrado</td>
+                  <td colSpan="6" style={{ textAlign: 'center' }}>Nenhum setor encontrado</td>
                 </tr>
               ) : (
                 setores.map((setor) => (

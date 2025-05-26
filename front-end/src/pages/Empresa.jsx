@@ -4,7 +4,7 @@ import Nav from '../components/Nav';
 
 import { useAuth } from '../context/AuthContext';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ModalEdit from '../components/ModalEdit';
 
 import { API_URL } from '../config/api';
