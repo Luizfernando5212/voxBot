@@ -10,9 +10,12 @@ const login = async (req, res) => {
     var message = 'Invalid email/password.';
     const empresa = await Empresa.findOne({ email: email });
 
+    console.log(empresa)
+
     if (empresa) {
         try {
             if (await empresa.comparePassword(password)) {
+                console.log('Password matched for email:', email);
                 const token = jwt.sign({ id: empresa._id }, process.env.JWT_SECRET, alg);
                 res.status(200).json({ token, empresa });
             } else {
