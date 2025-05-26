@@ -1,0 +1,171 @@
+/* Estilos gerais da estrutura */
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+main section {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-section {
+    gap: 8px;
+    flex-grow: 1;
+    background-color: #EEEEEE;
+}
+
+.logo-grande {
+    width: 600px;
+    height: auto;
+}
+
+.logo-pequeno {
+    width: 150px;
+    height: auto;
+}
+
+/* Formulário */
+.form-section {
+    flex-grow: 0.3;
+    padding: 0 35px;
+}
+
+.form-section img {
+    margin-bottom: 30px;
+}
+
+.form-section h2 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 45px;
+}
+
+form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 34px;
+}
+
+form span {
+    font-size: 14px;
+    text-decoration: underline;
+    color: #365eb6;
+    text-align: end;
+}
+
+/* Campos de entrada */
+.input-wrapper {
+    color: #555555;
+    font-size: 16px;
+    text-align: start;
+    width: 100%;
+}
+
+.input-wrapper label {
+    margin-bottom: 10px;
+    display: block;
+}
+
+.input-content {
+    width: 100%;
+    border-radius: 8px;
+    display: flex;
+    overflow: hidden;
+    height: 48px;
+}
+
+.input-content input {
+    border: none;
+    border-radius: 8px 0 0 8px;
+    background-color: #F1F3F6;
+    padding: 0 0 0 20px; /* só padding à esquerda */
+    width: 100%;
+    font-size: 16px;
+    height: 100%;
+    outline: none;
+}
+
+.input-content .icon {
+    width: 48px;
+    height: 48px;
+    background-color: #1F3F77;
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-content .icon img {
+    height: 20px;
+    margin-top: 28px;
+}
+
+/* Botões e divisores */
+.btn-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 30px;
+}
+
+.btn-wrapper .divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    font-size: 14px;
+    color: #EEEEEE;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.btn-wrapper .divider div {
+    flex-grow: 1;
+    height: 2px;
+    background-color: #EEEEEE;
+}
+
+.btn-wrapper button {
+    width: 100%;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    padding: 12px 24px;
+    cursor: pointer;
+}
+
+.btn-wrapper button:disabled {
+    opacity: 0.8;
+}
+
+.btn-wrapper .btn-primary {
+    background-color: #1F3F77;
+    color: white;
+    box-shadow: 0px 8px 12px rgba(148, 64, 255, 0.2);
+}
+
+.btn-wrapper .btn-secondary {
+    border: 1px solid #1F3F77;
+    color: #1F3F77;
+}

@@ -4,20 +4,19 @@ import Telefone from '../model/telefone.js';
 export default {
     async create(req, res) {
         try {
-            const { telefones, ...dadosPessoa } = req.body;
+            const { telefone, ...dadosPessoa } = req.body;
 
             const pessoa = await Pessoa.create(dadosPessoa);
 
-            if (telefones && telefones.length > 0) {
-                telefones.forEach(async (telefone) => {
-                    await Telefone.create({ ...telefone, pessoa: pessoa._id });
-                });
+
+            if (telefone) {
+                await Telefone.create({ ...telefone, pessoa: pessoa._id });
             }
 
 
-            return res.status(201).json(pessoa);
+            return res.status(201).json({ ...pessoa.toObject(), telefone });
         } catch (err) {
-            return res.status(400).json({ error: 'Error creating new Pessoa' + err});
+            return res.status(400).json({ error: 'Error creating new Pessoa' + err });
         }
     },
     async read(req, res) {
@@ -40,9 +39,20 @@ export default {
     async update(req, res) {
         try {
             const pessoa = await Pessoa.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            return res.status(200).json(pessoa);
+
+            let telefone = null;
+
+            if (req.body.telefone) {
+                await Telefone.updateOne(
+                    { pessoa: pessoa._id },
+                    { $set: { numero: req.body.telefone.numero } }
+                ).select('numero');
+                telefone = await Telefone.findOne({ pessoa: pessoa._id }).select('numero');
+            }
+
+            return res.status(200).json({ ...pessoa.toObject(), telefone });
         } catch (err) {
-            return res.status(400).json({ error: 'Error updating Pessoa' + err });
+            return res.status(400).json({ error: 'Error updating Pessoa ' + err });
         }
     },
     async delete(req, res) {

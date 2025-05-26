@@ -20,6 +20,7 @@ import telefoneRouter from './routes/telefone.js';
 import reuniaoRouter from './routes/reuniao.js';
 import participantesRouter from './routes/participantes.js';
 import chatRouter from './routes/chat.js';
+import loginRouter from './routes/login.js';
 // import lembreRouter from './routes/lembrete.js';
 
 var app = express();
@@ -45,6 +46,7 @@ app.use(API + '/telefone', telefoneRouter);
 app.use(API + '/reuniao', reuniaoRouter);
 app.use(API + '/participantes', participantesRouter);
 app.use(API + '/chat', chatRouter);
+app.use('/login', loginRouter);
 // app.use(API + '/lembrete', lembreRouter);
 
 // Rota padrão
