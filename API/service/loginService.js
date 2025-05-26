@@ -11,8 +11,6 @@ const login = async (req, res) => {
   try {
     const empresa = await Empresa.findOne({ email });
 
-    console.log(empresa);
-
     if (!empresa) {
       return res.status(401).json({ message });
     }
@@ -23,12 +21,10 @@ const login = async (req, res) => {
       return res.status(401).json({ message });
     }
 
-    console.log('Password matched for email:', email);
     const token = jwt.sign({ id: empresa._id }, process.env.JWT_SECRET, alg);
     return res.status(200).json({ token, empresa });
 
   } catch (err) {
-    console.error('Erro durante o login:', err);
     return res.status(500).json({ message: 'Erro interno no servidor.' });
   }
 };
