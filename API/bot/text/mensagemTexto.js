@@ -28,6 +28,7 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
         console.log(err);
         checkAlteraHorarioReuniao = false;
         checkCancelaReuniao = false;
+        checkListarReuniao = false;
     });
 
     if (!checkAlteraHorarioReuniao && !checkCancelaReuniao && !checkListarReuniao) {
