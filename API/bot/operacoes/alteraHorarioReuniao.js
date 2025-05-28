@@ -41,38 +41,18 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
             console.log('Usuário não informou a data/hora da reunião.');
             await axios(textMessage(numeroTel, 'Informe a data/hora da reunião que deseja alterar o horário.'));
             return true;
-        } else if (resultado.novoHorarioInicio == '' || resultado.novoHorarioFim == '') {
+        } else if (resultado.novoHorarioInicio == '' || resultado.novoHorarioInicio == null) {
             console.log('Usuário não informou a nova data/hora da reunião.');
-            await axios(textMessage(numeroTel, 'Verifique se informou corretamente os novos horários para a reunião.'));
+            await axios(textMessage(numeroTel, 'Por gentileza, informe o novo horário da reunião.'));
             return true;
         } else {
             try {
-                let dates = {
-                    novoHorarioInicio: new Date(resultado.novoHorarioInicio),
-                    novoHorarioFim: new Date(resultado.novoHorarioFim)
-                }
-
-                const reuniao_encontrada = await reuniao.findOne({
-                    dataHoraInicio: dates.novoHorarioInicio,
-                    status: 'Agendada',
-                    "organizador": consulta.pessoa._id
-                })
-
+                const reuniao_encontrada = await updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta);
                 if (reuniao_encontrada === null) {
-                    console.log('Reunião não encontrada ou cancelada');
                     return true;
                 }
-
-                if (reuniao_encontrada.dataHoraInicio.getTime() === dates.novoHorarioInicio.getTime() && reuniao_encontrada.dataHoraFim.getTime() === dates.novoHorarioFim.getTime()) {
-                    console.log('A reunião já possui esse horário.')
-                    return true;
-                }
-
-                reuniao_encontrada.dataHoraInicio = resultado.novoHorarioInicio
-                reuniao_encontrada.dataHoraFim = resultado.novoHorarioFim
                 consulta.etapaFluxo = 'INICIAL';
                 consulta.reuniao = null;
-
                 await reuniao_encontrada.save()
                 await consulta.save();
                 await enviaNotificacaoAlteracaoHorario(reuniao_encontrada);
@@ -89,6 +69,70 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
 }
 
 /**
+ * 
+ * @param {Object} resultado - Objeto que contém as informações da reunião
+ * @param {String} numeroTel - Número de telefone do usuário
+ * @param {Object} consulta - Objeto que contém as informações do usuário
+ * @returns {Object|null} - Retorna o objeto da reunião atualizada ou null se não encontrar a reunião
+ */
+async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
+    try{
+        console.log(resultado)
+        let dates = {
+            dataHoraInicio: new Date(resultado.dataHoraInicio),
+            novoHorarioInicio: new Date(resultado.novoHorarioInicio),
+            novoHorarioFim: new Date(resultado.novoHorarioFim)
+        }
+        console.log(dates);
+        
+        const reuniao_encontrada = await reuniao.findOne({
+            dataHoraInicio: dates.dataHoraInicio,
+            status: 'Agendada',
+            "organizador": consulta.pessoa._id
+        })
+
+        console.log(reuniao_encontrada);
+        
+        if (reuniao_encontrada === null) {
+            await axios(textMessage(numeroTel, 'Reunião não encontrada'));
+            return null;
+        }
+
+        if (reuniao_encontrada.dataHoraInicio.getTime() === dates.novoHorarioInicio.getTime() && reuniao_encontrada.dataHoraFim.getTime() === dates.novoHorarioFim.getTime()) {
+            await axios(textMessage(numeroTel, 'A reunião já possui esse horário.'));
+            return null;
+        }
+
+        reuniao_encontrada.dataHoraInicio = dates.novoHorarioInicio
+
+        if (resultado.novoHorarioFim !== '' || resultado.novoHorarioFim !== null) {
+            reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
+        }
+        const validaExitenciaReuniao = await reuniao.find({
+            $or: [
+                    {
+                        dataHoraInicio: { $lt: reuniao_encontrada.dataHoraFim },
+                        dataHoraFim: { $gt: reuniao_encontrada.dataHoraInicio }
+                    }
+            ],
+            status: 'Agendada',
+            "organizador": consulta.pessoa._id
+        })
+
+        if (validaExitenciaReuniao.length > 0) {
+            await axios(textMessage(numeroTel, 'Conflito de horário, você já possui uma reunião agendada durante esse período.'));
+            return null;
+        }
+
+        return reuniao_encontrada;
+    } catch (error) {
+        console.error(`Erro ao atualizar o horário da reunião: ${error}`);
+        return null;
+    }
+}
+
+
+/**
  * Função que constrói o prompt para o OpenAI, com as informações necessárias para alterar o horário da reunião.
  * 
  * @param {String} texto - Mensagem recebida do usuário
@@ -99,10 +143,10 @@ async function promptAlteracaoHorario(texto) {
     const reuniao_alterada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, não produza informações.' +
-                ' dataHoraInicio, é uma informação obrigatória, mantenha o horário informado pelo usuário sempre com o Z no final.' +
-                ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, mantenha o horário informado pelo usuário sempre com o Z no final.' +
-                ' novoHorarioFim é uma informação obrigatório, pois se refere ao novo horário de fim para a reunião, mantenha o horário informado pelo usuário sempre com o Z no final.' +
+            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, não produza informações, hoje é dia ' + new Date() +
+                ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
+                ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
+                ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
                 ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' },
             { role: 'user', content: texto },
         ],
