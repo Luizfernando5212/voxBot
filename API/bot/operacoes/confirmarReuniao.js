@@ -21,10 +21,13 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
     if (reuniaoAtual && consulta.etapaFluxo === 'CONFIRMACAO') {
         if (reuniaoAtual.status === 'Aguardando') {
             const resposta = mensagem.button_reply.id;
+            const participante = await participates.findOne({ pessoa: consulta.pessoa._id, reuniao: reuniaoId });
             if (resposta === 'CONFIRMAR') {
                 reuniaoAtual.status = 'Agendada';
                 consulta.etapaFluxo = 'INICIAL';
                 consulta.reuniao = null;
+                participante.conviteAceito = true;
+                participante.save();
                 consulta.save();
                 await reuniaoAtual.save();
                 await axios(textMessage(numeroTel, `Reunião agendada com sucesso para ${reuniaoAtual.dataHoraInicio.toLocaleString('pt-BR')} até ${reuniaoAtual.dataHoraFim.toLocaleString('pt-BR')}.`));
