@@ -34,16 +34,17 @@ const Evento = z.object({
 async function alteraHorarioReuniao(consulta, numeroTel, texto){
     try {
         let resultado = await promptAlteracaoHorario(texto);
+        
         if (!resultado.indAlteracaoHorario) {
             console.log("Não quer alterar o horário")
             return false;
         } else if (resultado.dataHoraInicio === '') {
             console.log('Usuário não informou a data/hora da reunião.');
-            await axios(textMessage(numeroTel, 'Informe a data/hora da reunião que deseja alterar o horário.'));
+            await axios(textMessage(numeroTel, 'Por gentileza, informe corretamente os horários da reunião que deseja alterar.'));
             return true;
         } else if (resultado.novoHorarioInicio == '' || resultado.novoHorarioInicio == null) {
             console.log('Usuário não informou a nova data/hora da reunião.');
-            await axios(textMessage(numeroTel, 'Por gentileza, informe o novo horário da reunião.'));
+            await axios(textMessage(numeroTel, 'Por gentileza, informe corretamente os horários da reunião que deseja alterar.'));
             return true;
         } else {
             try {
@@ -77,21 +78,17 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
  */
 async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
     try{
-        console.log(resultado)
         let dates = {
             dataHoraInicio: new Date(resultado.dataHoraInicio),
             novoHorarioInicio: new Date(resultado.novoHorarioInicio),
             novoHorarioFim: new Date(resultado.novoHorarioFim)
         }
-        console.log(dates);
         
         const reuniao_encontrada = await reuniao.findOne({
             dataHoraInicio: dates.dataHoraInicio,
             status: 'Agendada',
             "organizador": consulta.pessoa._id
         })
-
-        console.log(reuniao_encontrada);
         
         if (reuniao_encontrada === null) {
             await axios(textMessage(numeroTel, 'Reunião não encontrada'));
@@ -108,6 +105,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
         if (resultado.novoHorarioFim !== '' || resultado.novoHorarioFim !== null) {
             reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
         }
+
         const validaExitenciaReuniao = await reuniao.find({
             $or: [
                     {
@@ -144,7 +142,7 @@ async function promptAlteracaoHorario(texto) {
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
             { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, não produza informações, hoje é dia ' + new Date() +
-                ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
+                ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo.' +
                 ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
                 ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
                 ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' },
