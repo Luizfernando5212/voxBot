@@ -5,27 +5,33 @@ import estruturaMensagemTexto from "../operacoes/estruturaMensagemTexto.js";
 import cancelaReuniao from "../operacoes/cancelaReuniao.js";
 import alteraHorarioReuniao from "../operacoes/alteraHorarioReuniao.js";
 import verificaOperacao from "../operacoes/verificaOperacaoTxt.js";
+import listaReuniao from "../operacoes/listaReuniao.js";
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
     let checkCancelaReuniao = true;
     let checkAlteraHorarioReuniao = true;
-    
+    let checkListarReuniao = true;
+
     await verificaOperacao(mensagem).then(async (resposta) => {
         if (resposta.tipoMensagem === 'CANCELAR') {
             checkCancelaReuniao = await cancelaReuniao(consulta, numeroTel, mensagem);
         } else if (resposta.tipoMensagem === 'ALTERAR') {
             checkAlteraHorarioReuniao = await alteraHorarioReuniao(consulta, numeroTel, mensagem);
+        }else if (resposta.tipoMensagem === 'LISTAR') {
+            checkListarReuniao = await listaReuniao(consulta, numeroTel, mensagem);
         } else if (resposta.tipoMensagem === 'AGENDAR' || resposta.tipoMensagem === 'NDA') {
             checkAlteraHorarioReuniao = false;
             checkCancelaReuniao = false;
+            checkListarReuniao = false;
         }
     }).catch((err) => {
         console.log(err);
         checkAlteraHorarioReuniao = false;
         checkCancelaReuniao = false;
+        checkListarReuniao = false;
     });
 
-    if (!checkAlteraHorarioReuniao && !checkCancelaReuniao) {
+    if (!checkAlteraHorarioReuniao && !checkCancelaReuniao && !checkListarReuniao) {
         if (consulta.etapaFluxo === 'INICIAL') {
             const resposta = await estruturaMensagemTexto(mensagem);
             if (typeof resposta === "object" && resposta !== null) {
@@ -61,7 +67,7 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
             res.status(200).json({ message: 'Message sent successfully' });
         }
     } else {
-        res.status(200).json({ message: 'Reunião cancelada ou horário alterado com sucesso!' });
+        res.status(200).json({ message: 'Reunião cancelada ou horário alterado ou listagem realizada com sucesso!' });
     }
 }
 

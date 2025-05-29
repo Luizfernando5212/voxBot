@@ -56,7 +56,12 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
             const reuniao_encontrada = await reuniao.findOne({
                 // titulo: resposta.titulo,
                 dataHoraInicio: resultado.dataHoraInicio,
-                status: 'Agendada',
+                $or: [
+                    {
+                        status: 'Agendada',
+                        status: 'Aguardando'
+                    }
+                ],
                 "organizador": consulta.pessoa._id
             })
 
