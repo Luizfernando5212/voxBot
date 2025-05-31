@@ -6,6 +6,7 @@ import cancelaReuniao from "../operacoes/cancelaReuniao.js";
 import alteraHorarioReuniao from "../operacoes/alteraHorarioReuniao.js";
 import verificaOperacao from "../operacoes/verificaOperacaoTxt.js";
 import listaReuniao from "../operacoes/listaReuniao.js";
+import dayjs from "dayjs";
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
     let checkCancelaReuniao = true;
@@ -33,9 +34,10 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
 
     if (!checkAlteraHorarioReuniao && !checkCancelaReuniao && !checkListarReuniao) {
         if (consulta.etapaFluxo === 'INICIAL') {
+            
             const resposta = await estruturaMensagemTexto(mensagem);
-            if (typeof resposta === "object" && resposta !== null) {
-
+            
+            if (typeof resposta === "object" && resposta !== null) {  
                 try {
                     await agendaReuniao(consulta, resposta, res);
                 } catch (err) {
