@@ -85,7 +85,7 @@ function formatarListaReunioes(reunioes) {
     let mensagem = "*Suas reuniões agendadas:*\n\n";
     reunioes.forEach((r, i) => {
         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
-        mensagem += `   🕒 *Data:* ${dayjs.utc(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm")}, ${dayjs.utc(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm")}\n\n`;
+        mensagem += `   🕒 *Data:* ${dayjs(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm")}, ${dayjs(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm")}\n\n`;
     });
     return mensagem.trim();
 }
