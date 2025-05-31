@@ -35,7 +35,7 @@ async function estruturaMensagemTexto(texto) {
                 { role: 'system', content: 'Extraia as informações do evento/reunião, não produza informações, hoje é dia ' + new Date() +
                     ' E a reunião deve ser agendada para o futuro, não produza informações que não estejam explícitas no texto.' +
                     ' titulo, dataHoraInicio, dataHoraFim, (participantes ou setor) são informações obrigatórias.' +
-                    ' Não converta as datas para o GMT do Brasil.' +
+                    ' Em dataHoraInicio e dataHoraFim, não converta para UTC.' +
                     ' Você deve saber diferencias um setor de uma pessoa, o setor é o nome do departamento e a pessoa é o nome/apelido do funcionário.' +
                     ' isReuniao diz se a messagem é sobre reunião ou não, isSuficiente diz se possui informações suficientes para agendar a reunião.' },
                 { role: 'user', content: texto },
