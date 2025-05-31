@@ -8,6 +8,7 @@ import haConflitoHorario from './verificaDisponibilidade.js';
 import mensagemConfirmacao from './mensagemConfirmacao.js';
 import { format } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
+import dayjs from 'dayjs';
 
 /**
  * 
