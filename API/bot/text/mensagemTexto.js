@@ -7,37 +7,46 @@ import alteraHorarioReuniao from "../operacoes/alteraHorarioReuniao.js";
 import verificaOperacao from "../operacoes/verificaOperacaoTxt.js";
 import listaReuniao from "../operacoes/listaReuniao.js";
 import dayjs from "dayjs";
+import { mensagemIntro } from "../../utll/mensagens.js";
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
     let checkCancelaReuniao = true;
     let checkAlteraHorarioReuniao = true;
     let checkListarReuniao = true;
 
-    await verificaOperacao(mensagem).then(async (resposta) => {
-        if (resposta.tipoMensagem === 'CANCELAR') {
-            checkCancelaReuniao = await cancelaReuniao(consulta, numeroTel, mensagem);
-        } else if (resposta.tipoMensagem === 'ALTERAR') {
-            checkAlteraHorarioReuniao = await alteraHorarioReuniao(consulta, numeroTel, mensagem);
-        }else if (resposta.tipoMensagem === 'LISTAR') {
-            checkListarReuniao = await listaReuniao(consulta, numeroTel, mensagem);
-        } else if (resposta.tipoMensagem === 'AGENDAR' || resposta.tipoMensagem === 'NDA') {
+    if (consulta.etapaFluxo === 'INTRO') {
+        consulta.etapaFluxo = 'INICIAL';
+        consulta.save();
+
+        await axios(textMessage(numeroTel, mensagemIntro));
+
+        return res.status(200).json({message: 'Mensagem introdutória enviada com sucesso.'})
+    } else {
+
+        await verificaOperacao(mensagem).then(async (resposta) => {
+            if (resposta.tipoMensagem === 'CANCELAR') {
+                checkCancelaReuniao = await cancelaReuniao(consulta, numeroTel, mensagem);
+            } else if (resposta.tipoMensagem === 'ALTERAR') {
+                checkAlteraHorarioReuniao = await alteraHorarioReuniao(consulta, numeroTel, mensagem);
+            } else if (resposta.tipoMensagem === 'LISTAR') {
+                checkListarReuniao = await listaReuniao(consulta, numeroTel, mensagem);
+            } else if (resposta.tipoMensagem === 'AGENDAR' || resposta.tipoMensagem === 'NDA') {
+                checkAlteraHorarioReuniao = false;
+                checkCancelaReuniao = false;
+                checkListarReuniao = false;
+            }
+        }).catch((err) => {
+            console.log(err);
             checkAlteraHorarioReuniao = false;
             checkCancelaReuniao = false;
             checkListarReuniao = false;
-        }
-    }).catch((err) => {
-        console.log(err);
-        checkAlteraHorarioReuniao = false;
-        checkCancelaReuniao = false;
-        checkListarReuniao = false;
-    });
+        });
 
     if (!checkAlteraHorarioReuniao && !checkCancelaReuniao && !checkListarReuniao) {
         if (consulta.etapaFluxo === 'INICIAL') {
-            
             const resposta = await estruturaMensagemTexto(mensagem);
-            
-            if (typeof resposta === "object" && resposta !== null) {  
+            if (typeof resposta === "object" && resposta !== null) {
+
                 try {
                     await agendaReuniao(consulta, resposta, res);
                 } catch (err) {
@@ -55,21 +64,22 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
                     msg = 'Vocês possui uma reunião em agendamento, está na etapa de escolher o participante correto. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
                     await axios(textMessage(numeroTel, msg));
 
-                    break;
-                case 'CONFLITO_HORARIO': 
-                    msg = 'Você possui uma reunião em agendamento, está na etapa de escolher o horário correto. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
-                    await axios(textMessage(numeroTel, msg));
-                    break;
-                case 'CONFIRMACAO':
-                    msg = 'Você possui uma reunião em agendamento, está na etapa de confirmação. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
-                    await axios(textMessage(numeroTel, msg));
-                    break;
-                default: break;
+                        break;
+                    case 'CONFLITO_HORARIO':
+                        msg = 'Você possui uma reunião em agendamento, está na etapa de escolher o horário correto. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
+                        await axios(textMessage(numeroTel, msg));
+                        break;
+                    case 'CONFIRMACAO':
+                        msg = 'Você possui uma reunião em agendamento, está na etapa de confirmação. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
+                        await axios(textMessage(numeroTel, msg));
+                        break;
+                    default: break;
+                }
+                res.status(200).json({ message: 'Message sent successfully' });
             }
-            res.status(200).json({ message: 'Message sent successfully' });
+        } else {
+            res.status(200).json({ message: 'Reunião cancelada ou horário alterado ou listagem realizada com sucesso!' });
         }
-    } else {
-        res.status(200).json({ message: 'Reunião cancelada ou horário alterado ou listagem realizada com sucesso!' });
     }
 }
 
