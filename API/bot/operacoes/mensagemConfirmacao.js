@@ -41,9 +41,8 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
         // const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${reuniao.dataHoraInicio.toLocaleString('pt-BR')}, com: ${listaParticipantes.join(', ')} ?`;
         const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${dayjs(reuniao.dataHoraInicio).format('DD/MM/YYYY[,] HH:mm')}, com: ${listaParticipantes.join(', ')} ?`;
         const botoes = [{ id: 'CONFIRMAR', nome: 'Confirmar' }, { id: 'CANCELAR', nome: 'Cancelar' }];
-        console.log(mensagem);
-        // await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
-        // await consulta.save();
+        await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
+        await consulta.save();
     } else if (reuniao.status === 'Agendada') {
         listaParticipantes = listaSemOrganizador.map(p => p.pessoa._id);
         const organizador = await pessoa.findById(reuniao.organizador);
