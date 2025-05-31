@@ -75,7 +75,10 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 }
             };
             if (naoEncontrados.length > 0) {
+                console.log(naoEncontrados)
                 let mensagemNaoEncontrados = `As seguintes pessoas não foram encontradas: ${naoEncontrados.join(', ')}.`;
+                console.log(mensagemNaoEncontrados);
+                
                 await axios(textMessage(consulta.numero, mensagemNaoEncontrados));
                 await axios(textMessage(consulta.numero, 'Verifique o(s) nome(s) ou consulte o administrador e tente novamente.'));
             } else if (qtdDuplicados > 0) {

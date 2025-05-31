@@ -13,10 +13,10 @@ const Evento = z.object({
     titulo: z.string(),
     local: z.string().optional(),
     pauta: z.string().optional(),
-    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'),
+    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita.'),
     dataHoraFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita.'),
     setor: z.string().optional().describe('Setor só deve ser preenchido caso não encontre participantes'),
-    participantes: z.array(z.string()),
+    participantes: z.array(z.string()).describe('Lista de participantes.'),
     isReuniao: z.boolean().describe('Deve ser true para ser considerado uma reunião válida.'),
     isSuficiente: z.boolean().describe('Deve ser true caso possua informações suficientes para agendar a reunião (titulo, dataHoraInicio, dataHoraFim, participantes).'),
 });
@@ -37,7 +37,8 @@ async function estruturaMensagemTexto(texto) {
                     ' titulo, dataHoraInicio, dataHoraFim, (participantes ou setor) são informações obrigatórias.' +
                     ' Em dataHoraInicio e dataHoraFim, não converta para UTC.' +
                     ' Você deve saber diferencias um setor de uma pessoa, o setor é o nome do departamento e a pessoa é o nome/apelido do funcionário.' +
-                    ' isReuniao diz se a messagem é sobre reunião ou não, isSuficiente diz se possui informações suficientes para agendar a reunião.' },
+                    ' participantes não deve ser preenchido caso não esteja explícito.' +
+                    ' isReuniao diz se a messagem é sobre reunião ou não, isSuficiente diz se possui informações suficientes para agendar a reunião, sempre deve ser false quando o assunto for qualquer coisa diferente de agendamento de reunião.' },
                 { role: 'user', content: texto },
             ],
             response_format: responseFormat,
