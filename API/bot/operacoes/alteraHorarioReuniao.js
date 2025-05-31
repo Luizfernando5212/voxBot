@@ -89,7 +89,6 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             status: 'Agendada',
             "organizador": consulta.pessoa._id
         })
-        
         if (reuniao_encontrada === null) {
             await axios(textMessage(numeroTel, 'Reunião não encontrada'));
             return null;
@@ -102,7 +101,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
 
         reuniao_encontrada.dataHoraInicio = dates.novoHorarioInicio
 
-        if (resultado.novoHorarioFim !== '' || resultado.novoHorarioFim !== null) {
+        if (resultado.novoHorarioFim) {
             reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
         }
 
@@ -114,7 +113,8 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
                     }
             ],
             status: 'Agendada',
-            "organizador": consulta.pessoa._id
+            "organizador": consulta.pessoa._id,
+            _id: { $ne: reuniao_encontrada._id }
         })
 
         if (validaExitenciaReuniao.length > 0) {
@@ -142,9 +142,9 @@ async function promptAlteracaoHorario(texto) {
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
             { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, não produza informações, hoje é dia ' + new Date() +
-                ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo.' +
-                ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
-                ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
+                ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, converta para UTC.' +
+                ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, converta para UTC.' +
+                ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, converta para UTC.' +
                 ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' },
             { role: 'user', content: texto },
         ],
@@ -183,8 +183,8 @@ async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
             
             if (tel){
                 try {
-                    const dataHoraInicio = dayjs.utc(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
-                    const dataHoraFim = dayjs.utc(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
+                    const dataHoraInicio = dayjs(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
+                    const dataHoraFim = dayjs(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
                     const template = {
                         nome: 'usuario_alterou_horario_reuniao', 
                         parameters: [reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim]
