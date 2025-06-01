@@ -161,7 +161,7 @@ async function promptAlteracaoHorario(texto) {
                 ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
                 ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
                 ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
-                ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' +
+                ' indAlteracaoHorario é um booleano que indica se o usuário está querendo alterar o horário de uma reunião.' +
                 ' indMudancaDia é um booleano que indica se o usuário está mudando o dia da reunião e não só o horário.' },
             { role: 'user', content: texto },
         ],
