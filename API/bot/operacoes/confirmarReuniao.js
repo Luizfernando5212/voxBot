@@ -35,17 +35,12 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
                 participante.save();
                 consulta.save();
                 await reuniaoAtual.save();
-                
-                
-                const horaInicio = dayjs(reuniaoAtual.dataHoraInicio).tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
-                const horaFim = dayjs(reuniaoAtual.dataHoraFim).tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
-                console.log(horaInicio)
-                console.log(horaFim)
+                      
+                const horaInicio = dayjs(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm');
+                const horaFim = dayjs(reuniaoAtual.dataHoraFim).format('DD/MM/YYYY HH:mm')
 
-                console.log(dayjs(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm'));
-                console.log(dayjs(reuniaoAtual.dataHoraFim).format('DD/MM/YYYY HH:mm'));
-                // await axios(textMessage(numeroTel, `Reunião agendada com sucesso para ${horaInicio} até ${horaFim}.`));
-                // mensagemConfirmacao(consulta, reuniaoAtual);
+                await axios(textMessage(numeroTel, `Reunião agendada com sucesso para ${horaInicio} até ${horaFim}.`));
+                mensagemConfirmacao(consulta, reuniaoAtual);
             } else if (resposta === 'CANCELAR') {
                 consulta.etapaFluxo = 'INICIAL';
                 consulta.reuniao = null;
