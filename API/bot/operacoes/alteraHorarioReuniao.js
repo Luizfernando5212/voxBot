@@ -102,30 +102,42 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             await axios(textMessage(numeroTel, 'A reunião já possui esse horário.'));
             return null;
         }
+        
+        //Muda apenas o dia da dataHoraFim caso o usuário tenha alterado o dia da reunião
+        if (reuniao_encontrada.dataHoraFim.getTime() <  dates.novoHorarioInicio.getTime()) {
+            reuniao_encontrada.dataHoraFim = new Date(
+                dates.novoHorarioInicio.getFullYear(),
+                dates.novoHorarioInicio.getMonth(),
+                dates.novoHorarioInicio.getDate(),
+                reuniao_encontrada.dataHoraFim.getHours(),
+                reuniao_encontrada.dataHoraFim.getMinutes(),
+                reuniao_encontrada.dataHoraFim.getSeconds()  
+            )
+        }
 
         reuniao_encontrada.dataHoraInicio = dates.novoHorarioInicio
-
+        
         if (resultado.novoHorarioFim) {
             reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
         }
-
+        
         const validaExitenciaReuniao = await reuniao.find({
             $or: [
-                    {
-                        dataHoraInicio: { $lt: reuniao_encontrada.dataHoraFim },
-                        dataHoraFim: { $gt: reuniao_encontrada.dataHoraInicio }
-                    }
+                {
+                    dataHoraInicio: { $lt: reuniao_encontrada.dataHoraFim },
+                    dataHoraFim: { $gt: reuniao_encontrada.dataHoraInicio }
+                }
             ],
             status: 'Agendada',
             "organizador": consulta.pessoa._id,
             _id: { $ne: reuniao_encontrada._id }
         })
-
+        
         if (validaExitenciaReuniao.length > 0) {
             await axios(textMessage(numeroTel, 'Conflito de horário, você já possui uma reunião agendada durante esse período.'));
             return null;
         }
-
+        
         return reuniao_encontrada;
     } catch (error) {
         console.error(`Erro ao atualizar o horário da reunião: ${error}`);
@@ -145,7 +157,7 @@ async function promptAlteracaoHorario(texto) {
     const reuniao_alterada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, não produza informações, hoje é dia ' + new Date() +
+            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, você deve identificar datas nas linguagens como hoje, amanhã, semana e outras variações, não produza informações, hoje é dia ' + new Date() +
                 ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
                 ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
                 ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
