@@ -39,7 +39,8 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
         consulta.etapaFluxo = 'CONFIRMACAO';
         consulta.reuniao = reuniao._id;
         // const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${reuniao.dataHoraInicio.toLocaleString('pt-BR')}, com: ${listaParticipantes.join(', ')} ?`;
-        const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${dayjs(reuniao.dataHoraInicio).format('DD/MM/YYYY[,] HH:mm')}, com: ${listaParticipantes.join(', ')} ?`;
+        const horarioInicio = dayjs(reuniao.dataHoraInicio).tz('America/Sao_Paulo').format('DD/MM/YYYY[,] HH:mm'); // Formata data e hora de início
+        const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${horarioInicio}, com: ${listaParticipantes.join(', ')} ?`;
         const botoes = [{ id: 'CONFIRMAR', nome: 'Confirmar' }, { id: 'CANCELAR', nome: 'Cancelar' }];
         await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
         await consulta.save();
