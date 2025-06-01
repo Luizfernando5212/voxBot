@@ -9,7 +9,9 @@ import z from 'zod';
 import dotenv from 'dotenv';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
 dayjs.extend(utc);
+dayjs.extend(timezone);
 
 dotenv.config();
 
@@ -86,12 +88,16 @@ function formatarListaReunioes(reunioes) {
     let mensagem = "*Suas reuniões agendadas:*\n\n";
     console.log(reunioes);
     reunioes.forEach((r, i) => {
-        console.log(r.dataHoraInicio, r.dataHoraFim);
+        console.log(dayjs(r.dataHoraInicio).tz("America/Sao_Paulo"))
+        console.log(dayjs(r.dataHoraFim).tz("America/Sao_Paulo"))
+
+        console.log(dayjs(r.dataHoraInicio).tz("America/Sao_Paulo").format("DD/MM/YYYY HH:mm"), 
+        dayjs(r.dataHoraFim).tz("America/Sao_Paulo").format("DD/MM/YYYY HH:mm"));
+
         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
-        mensagem += `   🕒 *Data:* ${dayjs(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm")}, ${dayjs(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm")}\n\n`;
+        mensagem += `   🕒 *Data:* ${dayjs( new Date(r.dataHoraInicio)).format("DD/MM/YYYY, [Inicia às] HH:mm")}, ${dayjs(new Date(r.dataHoraFim)).format("DD/MM/YYYY, [Finaliza às] HH:mm")}\n\n`;
     });
     return mensagem.trim();
 }
-
 
 export default listaReuniao;
