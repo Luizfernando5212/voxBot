@@ -20,6 +20,7 @@ dayjs.extend(timezone);
  * @returns {Object} - Retorna resposta da requisição
  */
 const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
+    console.log("Payload caiu no confirmarReuniao.js");
     const reuniaoId = consulta.reuniao._id;
     const reuniaoAtual = await reuniao.findById(reuniaoId);
 
