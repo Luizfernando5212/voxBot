@@ -41,8 +41,8 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
         // const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${reuniao.dataHoraInicio.toLocaleString('pt-BR')}, com: ${listaParticipantes.join(', ')} ?`;
         const horarioInicio = dayjs(reuniao.dataHoraInicio).tz('America/Sao_Paulo').format('DD/MM/YYYY[,] HH:mm'); // Formata data e hora de início
         console.log(horarioInicio)
-        console.log(reuniao.dataHoraInicio);
-        console.log(reuniao.dataHoraInicio.tz('America/Sao_Paulo'));
+        console.log(dayjs(reuniao.dataHoraInicio));
+        console.log(dayjs(reuniao.dataHoraInicio).tz('America/Sao_Paulo'));
         console.log(dayjs(reuniao.dataHoraInicio).format('DD/MM/YYYY[,] HH:mm'))
 
         const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${horarioInicio}, com: ${listaParticipantes.join(', ')} ?`;
