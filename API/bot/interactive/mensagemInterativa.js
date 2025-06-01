@@ -25,7 +25,6 @@ const redirecionar = {
 }
 
 const mensagemInterativa = async (consulta, numeroTel, mensagem, res) => {
-    console.log(mensagem.button.payload)
     redirecionar[mensagem.type](consulta, numeroTel, mensagem, res);
 }
 
