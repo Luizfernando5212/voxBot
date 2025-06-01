@@ -4,6 +4,11 @@ import { textMessage } from "../../utll/requestBuilder.js";
 import mensagemConfirmacao from "./mensagemConfirmacao.js";
 import axios from "axios";
 import e from "express";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 
 /**
@@ -30,8 +35,17 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
                 participante.save();
                 consulta.save();
                 await reuniaoAtual.save();
-                await axios(textMessage(numeroTel, `Reunião agendada com sucesso para ${reuniaoAtual.dataHoraInicio.toLocaleString('pt-BR')} até ${reuniaoAtual.dataHoraFim.toLocaleString('pt-BR')}.`));
-                mensagemConfirmacao(consulta, reuniaoAtual);
+                
+                
+                const horaInicio = dayjs(reuniaoAtual.dataHoraInicio).tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+                const horaFim = dayjs(reuniaoAtual.dataHoraFim).tz('America/Sao_Paulo').format('DD/MM/YYYY HH:mm');
+                console.log(horaInicio)
+                console.log(horaFim)
+
+                console.log(dayjs(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm'));
+                console.log(dayjs(reuniaoAtual.dataHoraFim).format('DD/MM/YYYY HH:mm'));
+                // await axios(textMessage(numeroTel, `Reunião agendada com sucesso para ${horaInicio} até ${horaFim}.`));
+                // mensagemConfirmacao(consulta, reuniaoAtual);
             } else if (resposta === 'CANCELAR') {
                 consulta.etapaFluxo = 'INICIAL';
                 consulta.reuniao = null;
