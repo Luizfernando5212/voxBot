@@ -50,8 +50,9 @@ async function listaReuniao(consulta, numeroTel, texto) {
         await consulta.save();
         
         const mensagem = formatarListaReunioes(reunioes_encontradas);
-        await axios(textMessage(numeroTel, mensagem));
-        return true;
+        console.log(mensagem);
+        // await axios(textMessage(numeroTel, mensagem));
+        // return true;
     } catch (error) {
         console.error('Erro ao processar a solicitação de reunião:', error);
     }
@@ -87,8 +88,8 @@ function formatarListaReunioes(reunioes) {
     let mensagem = "*Suas reuniões agendadas:*\n\n";
     console.log(reunioes);
     reunioes.forEach((r, i) => {
-        const horarioInicio = dayjs(r.dataHoraInicio).tz("America/Sao_Paulo").format("DD/MM/YYYY, [Inicia às] HH:mm")
-        const horarioFim = dayjs(r.dataHoraFim).tz("America/Sao_Paulo").format("DD/MM/YYYY, [Finaliza às] HH:mm")
+        const horarioInicio = dayjs.utc(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm")
+        const horarioFim = dayjs.utc(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm")
 
         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
         mensagem += `   🕒 *Data:* ${horarioInicio}, ${horarioFim}\n\n`;

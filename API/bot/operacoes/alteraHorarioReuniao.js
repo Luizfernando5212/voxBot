@@ -16,9 +16,9 @@ dotenv.config();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const Evento = z.object({
-    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'),
-    novoHorarioInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'),
-    novoHorarioFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'),
+    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), não deve ser convertido para UTC, mantenha o Z no final.'),
+    novoHorarioInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), não deve ser convertido para UTC, mantenha o Z no final.'),
+    novoHorarioFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita e não deve ser convertido para UTC, mantenha o Z no final.'),
     indAlteracaoHorario: z.boolean().optional().describe('Deve ser true caso o usuário deseje alterar o horário de uma reunião.'),
 });
 
@@ -52,6 +52,7 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
                 if (reuniao_encontrada === null) {
                     return true;
                 }
+                console.log(reuniao_encontrada);
                 consulta.etapaFluxo = 'INICIAL';
                 consulta.reuniao = null;
                 await reuniao_encontrada.save()
@@ -78,17 +79,20 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
  */
 async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
     try{
+        console.log(resultado.dataHoraInicio)
         let dates = {
             dataHoraInicio: new Date(resultado.dataHoraInicio),
             novoHorarioInicio: new Date(resultado.novoHorarioInicio),
             novoHorarioFim: new Date(resultado.novoHorarioFim)
         }
-        
+
         const reuniao_encontrada = await reuniao.findOne({
             dataHoraInicio: dates.dataHoraInicio,
             status: 'Agendada',
             "organizador": consulta.pessoa._id
         })
+
+
         if (reuniao_encontrada === null) {
             await axios(textMessage(numeroTel, 'Reunião não encontrada'));
             return null;
@@ -142,9 +146,9 @@ async function promptAlteracaoHorario(texto) {
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
             { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, não produza informações, hoje é dia ' + new Date() +
-                ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, converta para UTC.' +
-                ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, converta para UTC.' +
-                ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, converta para UTC.' +
+                ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
+                ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
+                ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
                 ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' },
             { role: 'user', content: texto },
         ],
@@ -183,8 +187,8 @@ async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
             
             if (tel){
                 try {
-                    const dataHoraInicio = dayjs(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
-                    const dataHoraFim = dayjs(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
+                    const dataHoraInicio = dayjs.utc(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
+                    const dataHoraFim = dayjs.utc(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
                     const template = {
                         nome: 'usuario_alterou_horario_reuniao', 
                         parameters: [reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim]
