@@ -27,7 +27,7 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
     try{
         if (!payloadVerificaReuniao) {
             let resultado = await promptListarReuniaso(texto);
-
+            
             if (!resultado.indListaReuniao) {
                 console.log("Não deseja verificar reuniões.");
                 return false;
@@ -41,6 +41,21 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                 });
                 const mensagem = formatarListaReunioes(reunioes_encontradas);
                 await axios(textMessage(numeroTel, mensagem));
+                consulta.etapaFluxo = 'INICIAL';
+                consulta.reuniao = null;
+                await consulta.save();
+                return true;
+            } else {
+                console.log("caiu no else")
+                const reunioes_encontradas = await reuniao.find({
+                    status: 'Agendada',
+                    "organizador": consulta.pessoa._id
+                });
+                const mensagem = formatarListaReunioes(reunioes_encontradas);
+                await axios(textMessage(numeroTel, mensagem));
+                consulta.etapaFluxo = 'INICIAL';
+                consulta.reuniao = null;
+                await consulta.save();
                 return true;
             }
         } else {
@@ -50,11 +65,11 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
             });
             const mensagem = formatarListaReunioes(reunioes_encontradas);
             await axios(textMessage(numeroTel, mensagem));
+            consulta.etapaFluxo = 'INICIAL';
+            consulta.reuniao = null;
+            await consulta.save();
             return true;
         }
-        consulta.etapaFluxo = 'INICIAL';
-        consulta.reuniao = null;
-        await consulta.save();
         
     } catch (error) {
         console.error('Erro ao processar a solicitação de reunião:', error);
@@ -89,7 +104,6 @@ function formatarListaReunioes(reunioes) {
         return "Você não possui reuniões agendadas.";
     }
     let mensagem = "*Suas reuniões agendadas:*\n\n";
-    console.log(reunioes);
     reunioes.forEach((r, i) => {
         const horarioInicio = dayjs.utc(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm")
         const horarioFim = dayjs.utc(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm")
