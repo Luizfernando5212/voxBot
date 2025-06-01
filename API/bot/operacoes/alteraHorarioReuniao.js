@@ -20,6 +20,7 @@ const Evento = z.object({
     novoHorarioInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), não deve ser convertido para UTC, mantenha o Z no final.'),
     novoHorarioFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita e não deve ser convertido para UTC, mantenha o Z no final.'),
     indAlteracaoHorario: z.boolean().optional().describe('Deve ser true caso o usuário deseje alterar o horário de uma reunião.'),
+    indMudancaDia: z.boolean().optional().describe('Deve ser true caso o usuário deseje alterar o dia de uma reunião.'),
 });
 
 /**
@@ -92,7 +93,6 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             "organizador": consulta.pessoa._id
         })
 
-
         if (reuniao_encontrada === null) {
             await axios(textMessage(numeroTel, 'Reunião não encontrada'));
             return null;
@@ -104,7 +104,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
         }
         
         //Muda apenas o dia da dataHoraFim caso o usuário tenha alterado o dia da reunião
-        if (reuniao_encontrada.dataHoraFim.getTime() <  dates.novoHorarioInicio.getTime()) {
+        if (resultado.indMudancaDia) {
             reuniao_encontrada.dataHoraFim = new Date(
                 dates.novoHorarioInicio.getFullYear(),
                 dates.novoHorarioInicio.getMonth(),
@@ -120,7 +120,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
         if (resultado.novoHorarioFim) {
             reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
         }
-        
+
         const validaExitenciaReuniao = await reuniao.find({
             $or: [
                 {
@@ -132,7 +132,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             "organizador": consulta.pessoa._id,
             _id: { $ne: reuniao_encontrada._id }
         })
-        
+
         if (validaExitenciaReuniao.length > 0) {
             await axios(textMessage(numeroTel, 'Conflito de horário, você já possui uma reunião agendada durante esse período.'));
             return null;
@@ -157,11 +157,12 @@ async function promptAlteracaoHorario(texto) {
     const reuniao_alterada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, você deve identificar datas nas linguagens como hoje, amanhã, semana e outras variações, não produza informações, hoje é dia ' + new Date() +
+            { role: 'system', content: 'Extraia as informações do evento, identifique horários e verifique se o usuário deseja alterar o horário de uma reunião, você deve compreender linguagens como hoje, amanhã, semana que vem e outras variações, não produza informações, hoje é dia ' + new Date() +
                 ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
                 ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
                 ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, não converta para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
-                ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' },
+                ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' +
+                ' indMudancaDia é um booleano que indica se o usuário está mudando o dia da reunião e não só o horário.' },
             { role: 'user', content: texto },
         ],
         response_format: responseFormat,
