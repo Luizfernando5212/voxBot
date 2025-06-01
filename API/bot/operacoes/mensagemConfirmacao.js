@@ -40,10 +40,19 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
         consulta.reuniao = reuniao._id;
         // const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${reuniao.dataHoraInicio.toLocaleString('pt-BR')}, com: ${listaParticipantes.join(', ')} ?`;
         const horarioInicio = dayjs(reuniao.dataHoraInicio).tz('America/Sao_Paulo').format('DD/MM/YYYY[,] HH:mm'); // Formata data e hora de início
+        console.log(horarioInicio)
+        console.log(reuniao.dataHoraInicio);
+        console.log(reuniao.dataHoraInicio.tz('America/Sao_Paulo'));
+        console.log(dayjs(reuniao.dataHoraInicio).format('DD/MM/YYYY[,] HH:mm'))
+
         const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${horarioInicio}, com: ${listaParticipantes.join(', ')} ?`;
+
+        console.log('Mensagem de confirmação:', mensagem);
+        throw new Error('Mensagem de confirmação não implementada');
+
         const botoes = [{ id: 'CONFIRMAR', nome: 'Confirmar' }, { id: 'CANCELAR', nome: 'Cancelar' }];
-        await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
-        await consulta.save();
+        // await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
+        // await consulta.save();
     } else if (reuniao.status === 'Agendada') {
         listaParticipantes = listaSemOrganizador.map(p => p.pessoa._id);
         const organizador = await pessoa.findById(reuniao.organizador);
