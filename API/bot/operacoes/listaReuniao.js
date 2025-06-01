@@ -26,7 +26,6 @@ const Evento = z.object({
 async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=false) {
     try{
         if (!payloadVerificaReuniao) {
-            let reunioes_encontradas;
             let resultado = await promptListarReuniaso(texto);
 
             if (!resultado.indListaReuniao) {
@@ -35,26 +34,28 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
             }
             if (resultado.dataHoraInicio !== '') {
                 let dataHoraFim = dayjs.utc(resultado.dataHoraInicio).set('hour', 23).set('minute', 59).set('second', 59).toISOString();
-                reunioes_encontradas = await reuniao.find({
+                const reunioes_encontradas = await reuniao.find({
                     dataHoraInicio: { $gte: new Date(resultado.dataHoraInicio), $lte: new Date(dataHoraFim) },
                     status: 'Agendada',
                     "organizador": consulta.pessoa._id
                 });
+                const mensagem = formatarListaReunioes(reunioes_encontradas);
+                await axios(textMessage(numeroTel, mensagem));
+                return true;
             }
         } else {
-            reunioes_encontradas = await reuniao.find({
+            const reunioes_encontradas = await reuniao.find({
                     status: 'Agendada',
                     "organizador": consulta.pessoa._id
-            })
+            });
+            const mensagem = formatarListaReunioes(reunioes_encontradas);
+            await axios(textMessage(numeroTel, mensagem));
+            return true;
         }
-        console.log(resultado)
         consulta.etapaFluxo = 'INICIAL';
         consulta.reuniao = null;
         await consulta.save();
         
-        const mensagem = formatarListaReunioes(reunioes_encontradas);
-        await axios(textMessage(numeroTel, mensagem));
-        return true;
     } catch (error) {
         console.error('Erro ao processar a solicitação de reunião:', error);
     }
