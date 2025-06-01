@@ -16,7 +16,7 @@ dotenv.config();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const Evento = z.object({
-    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'),
+    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), não deve ser convertido para UTC, mantenha o Z no final, capture exatamente como o usuário informou.'),
     indCancelamento: z.boolean().optional().describe('Deve ser true caso o usuário queira cancelar a reunião.'),
 });
 
@@ -56,15 +56,9 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
             const reuniao_encontrada = await reuniao.findOne({
                 // titulo: resposta.titulo,
                 dataHoraInicio: resultado.dataHoraInicio,
-                $or: [
-                    {
-                        status: 'Agendada',
-                        status: 'Aguardando'
-                    }
-                ],
+                status: 'Agendada',
                 "organizador": consulta.pessoa._id
             })
-
             if (reuniao_encontrada === null) {
                 console.log('Reunião não encontrada ou já cancelada.');
                 await axios(textMessage(numeroTel, 'Reunião não encontrada ou já cancelada.'));
@@ -98,7 +92,8 @@ async function promptCancelaReuniao(texto) {
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
             { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário quer cancelar uma reunião, não produza informações, hoje é dia ' + new Date() +
-                ' e o usuário pode informar a dataHoraInicio da reunião que deseja cancelar, ou não informar nada.' +
+                ' o usuário pode informar a dataHoraInicio da reunião que deseja cancelar, ou não informar nada.' +
+                ' dataHoraInicio não deve ser convertido para UTC em hipótese nenhuma e não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
                 ' indCancelamento diz se o usuário está querendo cancelar uma reunião.' },
             { role: 'user', content: texto },
         ],
@@ -118,43 +113,42 @@ async function promptCancelaReuniao(texto) {
  */
 async function enviaNotificacaoReuniaoCancelada(reuniao_encontrada) {
     try {
-        const id_reuniao = reuniao_encontrada._id.toString();
-
-        const parcitipante = await participantes.find({
-            reuniao: { $in: id_reuniao },
-            conviteAceito: true
-        });
-
-        const id_pessoa = parcitipante.map(p => p.pessoa.toString());
-
-        const telefone = await telefones.find({
-            pessoa: { $in: id_pessoa }
-        })
-
-        for (const participante of parcitipante) {
-            
-            const tel = telefone.find(t => t.pessoa.toString() === participante.pessoa.toString());
-            
-            if (tel){
-                try {
-                    const dataHoraInicio = dayjs.utc(reuniao_encontrada.dataHoraInicio).format('HH:mm');
-                    const dataHoraFim = dayjs.utc(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
-                    const template = {
-                        name: "usuario_cancelou_reuniao",
-                        parameters: [reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim]
-                    };
-
-                    await axios(
-                        templateMessage(tel.numero, template));
-                    console.log("Lembrete enviado")
-                } catch (error) {
-                    console.log("Não foi possível enviar o lembrete", error)
+            const id_reuniao = reuniao_encontrada._id.toString();
+    
+            const parcitipante = await participantes.find({
+                reuniao: { $in: id_reuniao },
+                conviteAceito: true
+            });
+    
+            const id_pessoa = parcitipante.map(p => p.pessoa.toString());
+    
+            const telefone = await telefones.find({
+                pessoa: { $in: id_pessoa }
+            })
+    
+            for (const participante of parcitipante) {
+                
+                const tel = telefone.find(t => t.pessoa.toString() === participante.pessoa.toString());
+                
+                if (tel){
+                    try {
+                        const dataHoraInicio = dayjs.utc(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
+                        const dataHoraFim = dayjs.utc(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
+                        const template = {
+                            nome: 'usuario_cancelou_reuniao', 
+                            parameters: [reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim]
+                        };
+                        await axios(
+                            templateMessage(tel.numero, template));
+                        console.log("Lembrete enviado")
+                    } catch (error) {
+                        console.log("Não foi possível enviar o lembrete", error)
+                    }
                 }
             }
+        } catch (error) {
+            console.log(`Não foi possível notificar os participantes: ${error}`);
         }
-    } catch (error) {
-        console.log(`Não foi possível notificar os participantes: ${error}`);
-    }
 }
 
 export default cancelaReuniao;
