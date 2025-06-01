@@ -48,7 +48,8 @@ async function listaReuniao(consulta, numeroTel, texto) {
         await consulta.save();
         
         const mensagem = formatarListaReunioes(reunioes_encontradas);
-        await axios(textMessage(numeroTel, mensagem));
+        console.log(mensagem);
+        // await axios(textMessage(numeroTel, mensagem));
         return true;
     } catch (error) {
         console.error('Erro ao processar a solicitação de reunião:', error);
@@ -83,7 +84,9 @@ function formatarListaReunioes(reunioes) {
         return "Você não possui reuniões agendadas.";
     }
     let mensagem = "*Suas reuniões agendadas:*\n\n";
+    console.log(reunioes);
     reunioes.forEach((r, i) => {
+        console.log(r.dataHoraInicio, r.dataHoraFim);
         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
         mensagem += `   🕒 *Data:* ${dayjs(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm")}, ${dayjs(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm")}\n\n`;
     });
