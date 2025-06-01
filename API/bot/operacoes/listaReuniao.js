@@ -23,21 +23,24 @@ const Evento = z.object({
 });
 
 
-async function listaReuniao(consulta, numeroTel, texto) {
+async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=false) {
     try{
-        let reunioes_encontradas;
-        let resultado = await promptListarReuniaso(texto);
-        if (!resultado.indListaReuniao) {
-            console.log("Não deseja verificar reuniões.");
-            return false;
-        }
-        if (resultado.dataHoraInicio !== '') {
-            let dataHoraFim = dayjs.utc(resultado.dataHoraInicio).set('hour', 23).set('minute', 59).set('second', 59).toISOString();
-            reunioes_encontradas = await reuniao.find({
-                dataHoraInicio: { $gte: new Date(resultado.dataHoraInicio), $lte: new Date(dataHoraFim) },
-                status: 'Agendada',
-                "organizador": consulta.pessoa._id
-            });
+        if (!payloadVerificaReuniao) {
+            let reunioes_encontradas;
+            let resultado = await promptListarReuniaso(texto);
+
+            if (!resultado.indListaReuniao) {
+                console.log("Não deseja verificar reuniões.");
+                return false;
+            }
+            if (resultado.dataHoraInicio !== '') {
+                let dataHoraFim = dayjs.utc(resultado.dataHoraInicio).set('hour', 23).set('minute', 59).set('second', 59).toISOString();
+                reunioes_encontradas = await reuniao.find({
+                    dataHoraInicio: { $gte: new Date(resultado.dataHoraInicio), $lte: new Date(dataHoraFim) },
+                    status: 'Agendada',
+                    "organizador": consulta.pessoa._id
+                });
+            }
         } else {
             reunioes_encontradas = await reuniao.find({
                     status: 'Agendada',
@@ -50,9 +53,8 @@ async function listaReuniao(consulta, numeroTel, texto) {
         await consulta.save();
         
         const mensagem = formatarListaReunioes(reunioes_encontradas);
-        console.log(mensagem);
-        // await axios(textMessage(numeroTel, mensagem));
-        // return true;
+        await axios(textMessage(numeroTel, mensagem));
+        return true;
     } catch (error) {
         console.error('Erro ao processar a solicitação de reunião:', error);
     }
