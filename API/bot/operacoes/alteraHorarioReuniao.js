@@ -81,11 +81,14 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
 async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
     try{
         console.log(resultado.dataHoraInicio)
+
         let dates = {
             dataHoraInicio: new Date(resultado.dataHoraInicio),
             novoHorarioInicio: new Date(resultado.novoHorarioInicio),
             novoHorarioFim: new Date(resultado.novoHorarioFim)
         }
+
+        console.log(dates);
 
         const reuniao_encontrada = await reuniao.findOne({
             dataHoraInicio: dates.dataHoraInicio,
@@ -137,6 +140,8 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             await axios(textMessage(numeroTel, 'Conflito de horário, você já possui uma reunião agendada durante esse período.'));
             return null;
         }
+        
+        console.log(reuniao_encontrada.dataHoraFim);
         
         return reuniao_encontrada;
     } catch (error) {
