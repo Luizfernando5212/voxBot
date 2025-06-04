@@ -124,6 +124,11 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
         }
 
+        if (dates.novoHorarioInicio.getTime() === reuniao_encontrada.dataHoraFim.getTime()){
+            await axios(textMessage(numeroTel, 'O horário de início não pode ser igual ao horário de fim da reunião.'));
+            return null;
+        }
+        
         const validaExitenciaReuniao = await reuniao.find({
             $or: [
                 {
