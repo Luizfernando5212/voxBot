@@ -101,7 +101,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             return null;
         }
 
-        if (reuniao_encontrada.dataHoraInicio.getTime() === dates.novoHorarioInicio.getTime() && reuniao_encontrada.dataHoraFim.getTime() === dates.novoHorarioFim.getTime()) {
+        if (reuniao_encontrada.dataHoraInicio.getTime() === dates.novoHorarioInicio.getTime() && !isNaN(dates.novoHorarioInicio.getTime()) && reuniao_encontrada.dataHoraFim.getTime() === dates.novoHorarioFim.getTime()) {
             await axios(textMessage(numeroTel, 'A reunião já possui esse horário.'));
             return null;
         }
