@@ -125,7 +125,10 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
         }
 
         if (dates.novoHorarioInicio.getTime() === reuniao_encontrada.dataHoraFim.getTime()){
-            await axios(textMessage(numeroTel, 'O horário de início não pode ser igual ao horário de fim da reunião.'));
+            await axios(textMessage(numeroTel, 'O horário de início não pode ser igual ao horário de fim da reunião. Por gentileza informe um horário de início e de fim para a reunião.'));
+            return null;
+        } else if (dates.novoHorarioInicio.getTime() > reuniao_encontrada.dataHoraFim.getTime()) {
+            await axios(textMessage(numeroTel, 'O horário de início é maior que o horário de fim da reunião, por gentileza informe um novo horário para a reunião finalizar.'));
             return null;
         }
         
