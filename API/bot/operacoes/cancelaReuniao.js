@@ -53,9 +53,11 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
             }
             return true;
         } else {
+            const dataHoraInicio = validaConversaoUTC(resultado.dataHoraInicio);
+
             const reuniao_encontrada = await reuniao.findOne({
                 // titulo: resposta.titulo,
-                dataHoraInicio: resultado.dataHoraInicio,
+                dataHoraInicio: dataHoraInicio,
                 status: 'Agendada',
                 "organizador": consulta.pessoa._id
             })
@@ -149,6 +151,35 @@ async function enviaNotificacaoReuniaoCancelada(reuniao_encontrada) {
         } catch (error) {
             console.log(`Não foi possível notificar os participantes: ${error}`);
         }
+}
+
+
+function validaConversaoUTC(dataHoraISO){
+    if (dataHoraISO === '' || dataHoraISO === null) {
+        console.log('Data e hora não informadas.');
+        return;
+    }
+
+    console.log(`Data e hora recebida: ${dataHoraISO}`);
+    let horarioRecebido = dayjs(dataHoraISO)
+    let horarioBrasil = dayjs().tz('America/Sao_Paulo');
+
+    horarioBrasil = horarioBrasil.subtract(3, 'hour');
+    horarioBrasil.toDate();
+
+    console.log(`Horário atual no Brasil: ${horarioBrasil.format()}`);
+
+    const diferencaHoras = horarioRecebido.diff(horarioBrasil, 'hour');
+    
+    if (diferencaHoras !== 0) {
+        console.log("O horário foi convertido para UTC pela openAI.")
+        horarioRecebido = horarioRecebido.subtract(3, 'hour');
+        horarioRecebido.toDate();
+        return horarioRecebido;
+    }
+   
+    return dataHoraISO;
+
 }
 
 export default cancelaReuniao;
