@@ -19,7 +19,7 @@ dayjs.extend(utc);
 const envioLembrete = async () => {
     try {
         var now = moment.tz("America/Sao_Paulo");
-        var check_10_minutes = moment(now).add(50, 'minutes');
+        var check_10_minutes = moment(now).add(10, 'minutes');
 
         now.subtract(3, 'hours');
         now = now.toDate();
