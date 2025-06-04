@@ -18,11 +18,9 @@ dayjs.extend(utc);
  */
 const envioLembrete = async () => {
     try {
-
         var now = moment.tz("America/Sao_Paulo");
-        var check_10_minutes = moment(now).add(10, 'minutes');
-        
-        // Subtraindo por 3 pois o toDate() converte para UTC e o horário de Brasília é -3
+        var check_10_minutes = moment(now).add(50, 'minutes');
+
         now.subtract(3, 'hours');
         now = now.toDate();
 
@@ -37,7 +35,7 @@ const envioLembrete = async () => {
                     },
                     status: "Agendada",
                 });
-
+            
             if (reunioes.length > 0) {
                 const id_reuniao = reunioes.map(r => r._id.toString());
 
@@ -69,10 +67,11 @@ const envioLembrete = async () => {
                             const dataHoraInicio = dayjs.utc(reuniao.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
 
                             try {
-                                const response = await axios(
-                                    templateMessage(tel.numero
-                                    , buildTemplateMessageLembrete(pessoa.nome, reuniao.titulo, dataHoraInicio)
-                                    ));
+                                const template = {
+                                    nome: 'lembre_reuniao', 
+                                    parameters: [pessoa.nome, reuniao.titulo, dataHoraInicio]
+                                };
+                                await axios(templateMessage(tel.numero, template));
                                 console.log("Lembrete enviado")
                             } catch (error) {
                                 console.log("Não foi possível enviar o lembrete", error)
