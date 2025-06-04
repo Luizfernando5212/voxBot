@@ -89,29 +89,4 @@ const envioLembrete = async () => {
     }
 }
 
-
-/**
- * 
- * @param {String} nome - Nome do usuário 
- * @param {String} titulo - Título da reunião 
- * @param {String} dataHoraInicio - Horário de início da reunião 
- */
-const buildTemplateMessageLembrete = (nome, titulo, dataHoraInicio) => {
-    const template = {
-        name: "lembre_reuniao",
-        language: {
-            code: "pt_BR",
-        },
-        components: [{
-            type: "body",
-            parameters: [
-                {type: "text", text: nome},
-                {type: "text", text: titulo},
-                {type: "text", text: dataHoraInicio}
-            ]
-        }]
-    }
-    return template;
-}
-
 export default envioLembrete;
