@@ -171,10 +171,9 @@ async function promptAlteracaoHorario(texto) {
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
             { role: 'system', content: 'Extraia as informações do evento, identifique horários e verifique se o usuário deseja alterar o horário de uma reunião, você deve compreender linguagens como hoje, amanhã, semana que vem e outras variações. Não produza informações, hoje é dia ' + new Date() +
-            ' Atenção as datas e horas, elas não devem ser convertidas em UTC em hipótese nenhuma e não deve ser acrescentado o -03:00.' +
-            ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não deve ser convertido para UTC em nenhuma hipótese, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
-            ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não deve ser convertida para UTC em nenhuma hipótese, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
-            ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, não deve ser convertida para UTC em nenhuma hipótese, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
+            ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
+            ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
+            ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
             ' indAlteracaoHorario é um booleano que indica se o usuário está querendo alterar o horário de uma reunião.' +
             ' indMudancaDia é um booleano que indica se o usuário está mudando o dia da reunião e não só o horário.' },
             { role: 'user', content: texto },
