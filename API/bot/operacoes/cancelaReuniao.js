@@ -89,11 +89,14 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
  * @returns {Object} - Objeto com as informações da reunião
  */
 async function promptCancelaReuniao(texto) {
+    let horarioBrasil = dayjs().tz("America/Sao_Paulo");
+    horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+    
     let responseFormat = zodResponseFormat(Evento, 'evento');
     const reuniao_cancelada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário quer cancelar uma reunião, não produza informações, hoje é dia ' + new Date() +
+            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário quer cancelar uma reunião, não produza informações, hoje é dia ' + horarioBrasil +
                 ' o usuário pode informar a dataHoraInicio da reunião que deseja cancelar, ou não informar nada.' +
                 ' dataHoraInicio se refere a data e hora de início da reunião.' +
                 ' indCancelamento diz se o usuário está querendo cancelar uma reunião.' },

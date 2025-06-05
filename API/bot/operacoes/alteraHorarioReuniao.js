@@ -86,7 +86,6 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             novoHorarioInicio: new Date(validaConversaoUTC(resultado.novoHorarioInicio)),
             novoHorarioFim: new Date(validaConversaoUTC(resultado.novoHorarioFim))
         }
-
         console.log(dates);
 
         const reuniao_encontrada = await reuniao.findOne({
@@ -165,11 +164,14 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
  * @returns {Object} - Objeto com as informações extraídas do texto
  */
 async function promptAlteracaoHorario(texto) {
+    let horarioBrasil = dayjs().tz("America/Sao_Paulo");
+    horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+    
     let responseFormat = zodResponseFormat(Evento, 'evento');
     const reuniao_alterada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            { role: 'system', content: 'Extraia as informações do evento, identifique horários e verifique se o usuário deseja alterar o horário de uma reunião, você deve compreender linguagens como hoje, amanhã, semana que vem e outras variações. Não produza informações, hoje é dia ' + new Date() +
+            { role: 'system', content: 'Extraia as informações do evento, identifique horários e verifique se o usuário deseja alterar o horário de uma reunião, você deve compreender linguagens como hoje, amanhã, semana que vem e outras variações. Não produza informações, hoje é dia ' + horarioBrasil +
             ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
             ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
             ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião.' +
