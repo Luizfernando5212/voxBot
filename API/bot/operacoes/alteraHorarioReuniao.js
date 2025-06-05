@@ -16,9 +16,9 @@ dotenv.config();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const Evento = z.object({
-    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), não deve ser convertido para UTC, mantenha o Z no final, capture exatamente como o usuário informou.'),
-    novoHorarioInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), não deve ser convertido para UTC, mantenha o Z no final, capture exatamente como o usuário informou.'),
-    novoHorarioFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita e não deve ser convertido para UTC, mantenha o Z no final, capture exatamente como o usuário informou.'),
+    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), capture exatamente como o usuário informou.'),
+    novoHorarioInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), capture exatamente como o usuário informou.'),
+    novoHorarioFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita, capture exatamente como o usuário informou.'),
     indAlteracaoHorario: z.boolean().optional().describe('Deve ser true caso o usuário deseje alterar o horário de uma reunião.'),
     indMudancaDia: z.boolean().optional().describe('Deve ser true caso o usuário deseje alterar o dia de uma reunião.'),
 });
@@ -81,13 +81,12 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
 async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
     try{
         console.log(resultado.dataHoraInicio)
-
         let dates = {
             dataHoraInicio: new Date(validaConversaoUTC(resultado.dataHoraInicio)),
             novoHorarioInicio: new Date(validaConversaoUTC(resultado.novoHorarioInicio)),
             novoHorarioFim: new Date(validaConversaoUTC(resultado.novoHorarioFim))
         }
-        
+
         console.log(dates);
 
         const reuniao_encontrada = await reuniao.findOne({
@@ -173,7 +172,7 @@ async function promptAlteracaoHorario(texto) {
             { role: 'system', content: 'Extraia as informações do evento, identifique horários e verifique se o usuário deseja alterar o horário de uma reunião, você deve compreender linguagens como hoje, amanhã, semana que vem e outras variações. Não produza informações, hoje é dia ' + new Date() +
             ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
             ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
-            ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
+            ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião.' +
             ' indAlteracaoHorario é um booleano que indica se o usuário está querendo alterar o horário de uma reunião.' +
             ' indMudancaDia é um booleano que indica se o usuário está mudando o dia da reunião e não só o horário.' },
             { role: 'user', content: texto },
@@ -232,7 +231,12 @@ async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
     }
 }
 
-
+/**
+ * Função que valida se a data e hora recebida está no formato UTC e converte para o horário de Brasília.
+ * 
+ * @param {String} dataHoraISO - Data e hora no formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)
+ * @returns {Date|String} - Retorna Date quando há conversão por parte da OpenAI, ou a string original se não houver conversão.
+ */
 function validaConversaoUTC(dataHoraISO){
     if (dataHoraISO === '' || dataHoraISO === null) {
         console.log('Data e hora não informadas.');
@@ -240,21 +244,12 @@ function validaConversaoUTC(dataHoraISO){
     }
 
     console.log(`Data e hora recebida: ${dataHoraISO}`);
-    let horarioRecebido = dayjs(dataHoraISO)
-    let horarioBrasil = dayjs().tz('America/Sao_Paulo');
-
-    horarioBrasil = horarioBrasil.subtract(3, 'hour');
-    horarioBrasil.toDate();
-
-    console.log(`Horário atual no Brasil: ${horarioBrasil.format()}`);
-
-    const diferencaHoras = horarioRecebido.diff(horarioBrasil, 'hour');
     
-    if (diferencaHoras !== 0) {
-        console.log("O horário foi convertido para UTC pela openAI.")
+    if (dataHoraISO.includes('-03:00')) {
+        console.log("O horário foi convertido pela openAI.")
+        let horarioRecebido = dayjs(dataHoraISO)
         horarioRecebido = horarioRecebido.subtract(3, 'hour');
-        horarioRecebido.toDate();
-        return horarioRecebido;
+        return horarioRecebido.toDate();
     }
    
     return dataHoraISO;
