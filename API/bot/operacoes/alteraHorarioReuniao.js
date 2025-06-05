@@ -95,7 +95,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
         })
 
         if (reuniao_encontrada === null) {
-            await axios(textMessage(numeroTel, 'Reunião não encontrada'));
+            await axios(textMessage(numeroTel, '❗Reunião não encontrada, verifique se informou corretamente a data/hora da reunião e qual período acontecerá (Manhã, Tarde ou Noite).'));
             return null;
         }
 
