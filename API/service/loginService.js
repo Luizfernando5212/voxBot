@@ -14,14 +14,20 @@ const login = async (req, res) => {
     if (!empresa) {
       return res.status(401).json({ message });
     }
-
+    console.log(empresa)
+    
     const senhaConfere = await empresa.comparePassword(password);
-
+    
+    console.log(senhaConfere)
+    
     if (!senhaConfere) {
       return res.status(401).json({ message });
     }
-
+    
     const token = jwt.sign({ id: empresa._id }, process.env.JWT_SECRET, alg);
+
+    console.log(token)
+    
     return res.status(200).json({ token, empresa });
 
   } catch (err) {
