@@ -49,7 +49,7 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
                 await axios(textMessage(numeroTel, 'Reunião cancelada com sucesso!'));
             } else {
                 console.log('Usuário não informou a data/hora da reunião.');
-                await axios(textMessage(numeroTel, 'Informe a data/hora da reunião que deseja cancelar.'));
+                await axios(textMessage(numeroTel, 'Por favor, informe o dia e a data/hora da reunião que deseja cancelar.'));
             }
             return true;
         } else {
@@ -91,7 +91,7 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
 async function promptCancelaReuniao(texto) {
     let horarioBrasil = dayjs().tz("America/Sao_Paulo");
     horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
-    
+
     let responseFormat = zodResponseFormat(Evento, 'evento');
     const reuniao_cancelada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
