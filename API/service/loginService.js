@@ -31,7 +31,7 @@ const login = async (req, res) => {
     return res.status(200).json({ token, empresa });
 
   } catch (err) {
-    return res.status(500).json({ message: 'Erro interno no servidor.' });
+    return res.status(500).json({ message: 'Erro interno no servidor.', error:err});
   }
 };
 
