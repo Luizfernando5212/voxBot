@@ -98,12 +98,12 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
         })
 
         if (reuniao_encontrada === null) {
-            await axios(textMessage(numeroTel, '❗Reunião não encontrada, verifique se informou corretamente a data/hora da reunião e qual período acontecerá (Manhã, Tarde ou Noite)❗'));
+            await axios(textMessage(numeroTel, '❗Reunião não encontrada, verifique se informou corretamente a data/hora da reunião e qual período acontecerá (Manhã, Tarde ou Noite).'));
             return null;
         }
 
         if (reuniao_encontrada.dataHoraInicio.getTime() === dates.novoHorarioInicio.getTime() && !isNaN(dates.novoHorarioInicio.getTime()) && reuniao_encontrada.dataHoraFim.getTime() === dates.novoHorarioFim.getTime()) {
-            await axios(textMessage(numeroTel, '❗A reunião já possui esse horário.❗'));
+            await axios(textMessage(numeroTel, '❗A reunião já possui esse horário.'));
             return null;
         }
         
@@ -126,13 +126,13 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
         }
 
         if (dates.novoHorarioInicio.getTime() === reuniao_encontrada.dataHoraFim.getTime()){
-            await axios(textMessage(numeroTel, '❗O horário de início não pode ser igual ao horário de fim da reunião. Por gentileza informe um horário de início e de fim para a reunião❗'));
+            await axios(textMessage(numeroTel, '❗O horário de início não pode ser igual ao horário de fim da reunião. Por gentileza informe um horário de início e de fim para a reunião;'));
             return null;
         } else if (dates.novoHorarioInicio.getTime() > reuniao_encontrada.dataHoraFim.getTime()) {
-            await axios(textMessage(numeroTel, '❗O horário de início é maior que o horário de fim da reunião, por gentileza informe um novo horário para a reunião finalizar❗'));
+            await axios(textMessage(numeroTel, '❗O horário de início é maior que o horário de fim da reunião, por gentileza informe um novo horário para a reunião finalizar.'));
             return null;
         } else if (dates.novoHorarioInicio.getTime() < horarioBrasil.getTime()) {
-            await axios(textMessage(numeroTel, '❗O horário de início da reunião não pode ser no passado, por gentileza informe um novo horário para a reunião iniciar❗'));
+            await axios(textMessage(numeroTel, '❗Não é possível alterar o horário da reunião para o passado, por gentileza informe um novo horário para a reunião iniciar.'));
             return null;
         }
         
@@ -149,7 +149,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
         })
 
         if (validaExitenciaReuniao.length > 0) {
-            await axios(textMessage(numeroTel, '❗Conflito de horário, você já possui uma reunião agendada durante esse período❗'));
+            await axios(textMessage(numeroTel, '❗Conflito de horário, você já possui uma reunião agendada durante esse período.'));
             return null;
         }
         
