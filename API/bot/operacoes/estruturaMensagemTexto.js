@@ -3,6 +3,10 @@ import OpenAI from 'openai';
 import z from 'zod';
 import Setor from "../../model/setor.js";
 import dotenv from 'dotenv';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+dayjs.extend(utc);
+
 
 dotenv.config();
 
@@ -13,10 +17,10 @@ const Evento = z.object({
     titulo: z.string(),
     local: z.string().optional(),
     pauta: z.string().optional(),
-    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'),
+    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita.'),
     dataHoraFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita.'),
     setor: z.string().optional().describe('Setor só deve ser preenchido caso não encontre participantes'),
-    participantes: z.array(z.string()),
+    participantes: z.array(z.string()).describe('Lista de participantes.'),
     isReuniao: z.boolean().describe('Deve ser true para ser considerado uma reunião válida.'),
     isSuficiente: z.boolean().describe('Deve ser true caso possua informações suficientes para agendar a reunião (titulo, dataHoraInicio, dataHoraFim, participantes).'),
 });
@@ -28,15 +32,21 @@ const Evento = z.object({
  */
 async function estruturaMensagemTexto(texto) {
     try {
+        // Trocando o new Date() para o horário do Brasil, pois o date converte para UTC e isso causa conflito quando o horário é 21h da noite, pois joga para o dia seguinte.
+        let horarioBrasil = dayjs().tz("America/Sao_Paulo");
+        horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+        
         let responseFormat = zodResponseFormat(Evento, 'evento');
         const reuniao = await openai.beta.chat.completions.parse({
             model: 'gpt-4o-mini-2024-07-18',
             messages: [
-                { role: 'system', content: 'Extraia as informações do evento/reunião, não produza informações, hoje é dia ' + new Date() +
+                { role: 'system', content: 'Extraia as informações do evento/reunião, não produza informações, hoje é dia ' + horarioBrasil +
                     ' E a reunião deve ser agendada para o futuro, não produza informações que não estejam explícitas no texto.' +
                     ' titulo, dataHoraInicio, dataHoraFim, (participantes ou setor) são informações obrigatórias.' +
+                    // ' Em dataHoraInicio e dataHoraFim, converta para UTC.' +
                     ' Você deve saber diferencias um setor de uma pessoa, o setor é o nome do departamento e a pessoa é o nome/apelido do funcionário.' +
-                    ' isReuniao diz se a messagem é sobre reunião ou não, isSuficiente diz se possui informações suficientes para agendar a reunião.' },
+                    ' participantes não deve ser preenchido caso não esteja explícito.' +
+                    ' isReuniao diz se a messagem é sobre reunião ou não, isSuficiente diz se possui informações suficientes para agendar a reunião, sempre deve ser false quando o assunto for qualquer coisa diferente de agendamento de reunião.' },
                 { role: 'user', content: texto },
             ],
             response_format: responseFormat,

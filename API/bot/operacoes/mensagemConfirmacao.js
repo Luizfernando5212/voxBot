@@ -5,7 +5,9 @@ import telefone from '../../model/telefone.js';
 import { interactiveMessage, templateMessage } from '../../utll/requestBuilder.js';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
 dayjs.extend(utc);
+dayjs.extend(timezone);
 
 /**
  * Método para enviar mensagem de confirmação de reunião, tanto para o organizador quanto para os participantes.
@@ -15,22 +17,30 @@ dayjs.extend(utc);
  * @param {Array} listaParticipantes - Lista de participantes da reunião, parâmetro opcional
  */
 const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) => {
+
     let listaSemOrganizador = [];
+
     if (listaParticipantes.length === 0) {
         // Buscar participantes relacionados à reunião
         const participantes = await Participantes.find({ reuniao: reuniao._id })
-            .populate({ path: 'pessoa', select: 'nome _id' });
+        .populate({ path: 'pessoa', select: 'nome _id' });
         // Extrair apenas os nomes dos participantes
         listaSemOrganizador = participantes.filter(participante => {
             return !participante.pessoa._id.equals(reuniao.organizador);
         });
     }
-
+    
     if (reuniao.status === 'Aguardando') {
-        listaParticipantes = listaSemOrganizador.map(p => p.pessoa.nome);
+
+        if (listaSemOrganizador.length !== 0) {
+            listaParticipantes = listaSemOrganizador.map(p => p.pessoa.nome);
+        }
+
         consulta.etapaFluxo = 'CONFIRMACAO';
         consulta.reuniao = reuniao._id;
-        const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${reuniao.dataHoraInicio.toLocaleString('pt-BR')}, com: ${listaParticipantes.join(', ')} ?`;
+        // const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${reuniao.dataHoraInicio.toLocaleString('pt-BR')}, com: ${listaParticipantes.join(', ')} ?`;
+        const horarioInicio = dayjs(reuniao.dataHoraInicio).format('DD/MM/YYYY[,] HH:mm'); // Quando convertemos o formato de data da OpenAI para tz("America/Sao_Paulo"), o horário fica incorreto na visualização, portanto não foi utilizado o tz nesse trecho.
+        const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${horarioInicio}, com: ${listaParticipantes.join(', ')} ?`;
         const botoes = [{ id: 'CONFIRMAR', nome: 'Confirmar' }, { id: 'CANCELAR', nome: 'Cancelar' }];
         await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
         await consulta.save();

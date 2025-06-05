@@ -16,10 +16,11 @@ dotenv.config();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const Evento = z.object({
-    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'),
-    novoHorarioInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'),
-    novoHorarioFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)'),
+    dataHoraInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), capture exatamente como o usuário informou.'),
+    novoHorarioInicio: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), capture exatamente como o usuário informou.'),
+    novoHorarioFim: z.string().describe('formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ), apenas preencha caso esteja explícita, capture exatamente como o usuário informou.'),
     indAlteracaoHorario: z.boolean().optional().describe('Deve ser true caso o usuário deseje alterar o horário de uma reunião.'),
+    indMudancaDia: z.boolean().optional().describe('Deve ser true caso o usuário deseje alterar o dia de uma reunião.'),
 });
 
 /**
@@ -35,7 +36,7 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
     try {
         let resultado = await promptAlteracaoHorario(texto);
         
-        if (!resultado.indAlteracaoHorario) {
+        if (!resultado.indAlteracaoHorario && !resultado.indMudancaDia) {
             console.log("Não quer alterar o horário")
             return false;
         } else if (resultado.dataHoraInicio === '') {
@@ -52,6 +53,7 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
                 if (reuniao_encontrada === null) {
                     return true;
                 }
+                console.log(reuniao_encontrada);
                 consulta.etapaFluxo = 'INICIAL';
                 consulta.reuniao = null;
                 await reuniao_encontrada.save()
@@ -78,50 +80,81 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
  */
 async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
     try{
+        let horarioBrasil = dayjs().tz("America/Sao_Paulo");
+        horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+
+        console.log(resultado.dataHoraInicio)
         let dates = {
-            dataHoraInicio: new Date(resultado.dataHoraInicio),
-            novoHorarioInicio: new Date(resultado.novoHorarioInicio),
-            novoHorarioFim: new Date(resultado.novoHorarioFim)
+            dataHoraInicio: new Date(validaConversaoUTC(resultado.dataHoraInicio)),
+            novoHorarioInicio: new Date(validaConversaoUTC(resultado.novoHorarioInicio)),
+            novoHorarioFim: new Date(validaConversaoUTC(resultado.novoHorarioFim))
         }
-        
+        console.log(dates);
+
         const reuniao_encontrada = await reuniao.findOne({
             dataHoraInicio: dates.dataHoraInicio,
             status: 'Agendada',
             "organizador": consulta.pessoa._id
         })
-        
+
         if (reuniao_encontrada === null) {
-            await axios(textMessage(numeroTel, 'Reunião não encontrada'));
+            await axios(textMessage(numeroTel, '❗Reunião não encontrada, verifique se informou corretamente a data/hora da reunião e qual período acontecerá (Manhã, Tarde ou Noite).'));
             return null;
         }
 
-        if (reuniao_encontrada.dataHoraInicio.getTime() === dates.novoHorarioInicio.getTime() && reuniao_encontrada.dataHoraFim.getTime() === dates.novoHorarioFim.getTime()) {
-            await axios(textMessage(numeroTel, 'A reunião já possui esse horário.'));
+        if (reuniao_encontrada.dataHoraInicio.getTime() === dates.novoHorarioInicio.getTime() && !isNaN(dates.novoHorarioInicio.getTime()) && reuniao_encontrada.dataHoraFim.getTime() === dates.novoHorarioFim.getTime()) {
+            await axios(textMessage(numeroTel, '❗A reunião já possui esse horário.'));
             return null;
+        }
+        
+        //Muda apenas o dia da dataHoraFim caso o usuário tenha alterado o dia da reunião
+        if (resultado.indMudancaDia) {
+            reuniao_encontrada.dataHoraFim = new Date(
+                dates.novoHorarioInicio.getFullYear(),
+                dates.novoHorarioInicio.getMonth(),
+                dates.novoHorarioInicio.getDate(),
+                reuniao_encontrada.dataHoraFim.getHours(),
+                reuniao_encontrada.dataHoraFim.getMinutes(),
+                reuniao_encontrada.dataHoraFim.getSeconds()  
+            )
         }
 
         reuniao_encontrada.dataHoraInicio = dates.novoHorarioInicio
-
-        if (resultado.novoHorarioFim !== '' || resultado.novoHorarioFim !== null) {
+        
+        if (resultado.novoHorarioFim) {
             reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
         }
 
+        if (dates.novoHorarioInicio.getTime() === reuniao_encontrada.dataHoraFim.getTime()){
+            await axios(textMessage(numeroTel, '❗O horário de início não pode ser igual ao horário de fim da reunião. Por gentileza informe um horário de início e de fim para a reunião;'));
+            return null;
+        } else if (dates.novoHorarioInicio.getTime() > reuniao_encontrada.dataHoraFim.getTime()) {
+            await axios(textMessage(numeroTel, '❗O horário de início é maior que o horário de fim da reunião, por gentileza informe um novo horário para a reunião finalizar.'));
+            return null;
+        } else if (dates.novoHorarioInicio.getTime() < horarioBrasil.getTime()) {
+            await axios(textMessage(numeroTel, '❗Não é possível alterar o horário da reunião para o passado, por gentileza informe um novo horário para a reunião iniciar.'));
+            return null;
+        }
+        
         const validaExitenciaReuniao = await reuniao.find({
             $or: [
-                    {
-                        dataHoraInicio: { $lt: reuniao_encontrada.dataHoraFim },
-                        dataHoraFim: { $gt: reuniao_encontrada.dataHoraInicio }
-                    }
+                {
+                    dataHoraInicio: { $lt: reuniao_encontrada.dataHoraFim },
+                    dataHoraFim: { $gt: reuniao_encontrada.dataHoraInicio }
+                }
             ],
             status: 'Agendada',
-            "organizador": consulta.pessoa._id
+            "organizador": consulta.pessoa._id,
+            _id: { $ne: reuniao_encontrada._id }
         })
 
         if (validaExitenciaReuniao.length > 0) {
-            await axios(textMessage(numeroTel, 'Conflito de horário, você já possui uma reunião agendada durante esse período.'));
+            await axios(textMessage(numeroTel, '❗Conflito de horário, você já possui uma reunião agendada durante esse período.'));
             return null;
         }
-
+        
+        console.log(reuniao_encontrada.dataHoraFim);
+        
         return reuniao_encontrada;
     } catch (error) {
         console.error(`Erro ao atualizar o horário da reunião: ${error}`);
@@ -137,15 +170,19 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
  * @returns {Object} - Objeto com as informações extraídas do texto
  */
 async function promptAlteracaoHorario(texto) {
+    let horarioBrasil = dayjs().tz("America/Sao_Paulo");
+    horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+
     let responseFormat = zodResponseFormat(Evento, 'evento');
     const reuniao_alterada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário deseja alterar o horário de uma reunião, não produza informações, hoje é dia ' + new Date() +
-                ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo.' +
-                ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
-                ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião, ela deve estar no formato -03:00, pois o horário do usuário é America/SãoPaulo' +
-                ' indCancelamento é um booleano que indica se o usuário está querendo cancelar uma reunião.' },
+            { role: 'system', content: 'Extraia as informações do evento, identifique horários e verifique se o usuário deseja alterar o horário de uma reunião, você deve compreender linguagens como hoje, amanhã, semana que vem e outras variações. Não produza informações, hoje é dia ' + horarioBrasil +
+            ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
+            ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
+            ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião.' +
+            ' indAlteracaoHorario é um booleano que indica se o usuário está querendo alterar o horário de uma reunião.' +
+            ' indMudancaDia é um booleano que indica se o usuário está mudando o dia da reunião e não só o horário.' },
             { role: 'user', content: texto },
         ],
         response_format: responseFormat,
@@ -200,6 +237,31 @@ async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
     } catch (error) {
         console.log(`Não foi possível notificar os participantes: ${error}`);
     }
+}
+
+/**
+ * Função que valida se a data e hora recebida está no formato UTC e converte para o horário de Brasília.
+ * 
+ * @param {String} dataHoraISO - Data e hora no formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)
+ * @returns {Date|String} - Retorna Date quando há conversão por parte da OpenAI, ou a string original se não houver conversão.
+ */
+function validaConversaoUTC(dataHoraISO){
+    if (dataHoraISO === '' || dataHoraISO === null) {
+        console.log('Data e hora não informadas.');
+        return;
+    }
+
+    console.log(`Data e hora recebida: ${dataHoraISO}`);
+    
+    if (dataHoraISO.includes('-03:00')) {
+        console.log("O horário foi convertido pela openAI.")
+        let horarioRecebido = dayjs(dataHoraISO)
+        horarioRecebido = horarioRecebido.subtract(3, 'hour');
+        return horarioRecebido.toDate();
+    }
+   
+    return dataHoraISO;
+
 }
 
 export default alteraHorarioReuniao;

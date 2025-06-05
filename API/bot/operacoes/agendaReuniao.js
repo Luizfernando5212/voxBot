@@ -8,6 +8,7 @@ import haConflitoHorario from './verificaDisponibilidade.js';
 import mensagemConfirmacao from './mensagemConfirmacao.js';
 import { format } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
+import dayjs from 'dayjs';
 
 /**
  * 
@@ -19,9 +20,9 @@ import { ptBR } from 'date-fns/locale';
 const agendaReuniao = async (consulta, objReuniao, res) => {
     objReuniao.organizador = consulta.pessoa._id;
     const novaReuniao = await Reuniao.create(objReuniao);
+
     let nomes = objReuniao.participantes;
     const setor = objReuniao.setor;
-
     try {
         // adicionando o organizador da reunião
         await adicionaParticipante(consulta.pessoa, novaReuniao);
@@ -75,7 +76,10 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                 }
             };
             if (naoEncontrados.length > 0) {
+                console.log(naoEncontrados)
                 let mensagemNaoEncontrados = `As seguintes pessoas não foram encontradas: ${naoEncontrados.join(', ')}.`;
+                console.log(mensagemNaoEncontrados);
+                
                 await axios(textMessage(consulta.numero, mensagemNaoEncontrados));
                 await axios(textMessage(consulta.numero, 'Verifique o(s) nome(s) ou consulte o administrador e tente novamente.'));
             } else if (qtdDuplicados > 0) {

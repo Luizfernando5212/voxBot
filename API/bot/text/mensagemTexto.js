@@ -6,6 +6,7 @@ import cancelaReuniao from "../operacoes/cancelaReuniao.js";
 import alteraHorarioReuniao from "../operacoes/alteraHorarioReuniao.js";
 import verificaOperacao from "../operacoes/verificaOperacaoTxt.js";
 import listaReuniao from "../operacoes/listaReuniao.js";
+import dayjs from "dayjs";
 import { mensagemIntro } from "../../utll/mensagens.js";
 
 const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
@@ -41,27 +42,27 @@ const mensagemTexto = async (consulta, numeroTel, mensagem, res) => {
             checkListarReuniao = false;
         });
 
-        if (!checkAlteraHorarioReuniao && !checkCancelaReuniao && !checkListarReuniao) {
-            if (consulta.etapaFluxo === 'INICIAL') {
-                const resposta = await estruturaMensagemTexto(mensagem);
-                if (typeof resposta === "object" && resposta !== null) {
+    if (!checkAlteraHorarioReuniao && !checkCancelaReuniao && !checkListarReuniao) {
+        if (consulta.etapaFluxo === 'INICIAL') {
+            const resposta = await estruturaMensagemTexto(mensagem);
+            if (typeof resposta === "object" && resposta !== null) {
 
-                    try {
-                        await agendaReuniao(consulta, resposta, res);
-                    } catch (err) {
-                        console.log(err);
-                        res.status(400).json({ error: 'Error sending message' + err });
-                    }
-                } else {
-                    await axios(textMessage(numeroTel, resposta));
-                    res.status(200).json({ message: 'Message sent successfully' });
+                try {
+                    await agendaReuniao(consulta, resposta, res);
+                } catch (err) {
+                    console.log(err);
+                    res.status(400).json({ error: 'Error sending message' + err });
                 }
             } else {
-                let msg;
-                switch (consulta.etapaFluxo) {
-                    case 'PESSOA_DUPLICADA':
-                        msg = 'Vocês possui uma reunião em agendamento, está na etapa de escolher o participante correto. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
-                        await axios(textMessage(numeroTel, msg));
+                await axios(textMessage(numeroTel, resposta));
+                res.status(200).json({ message: 'Message sent successfully' });
+            }
+        } else {
+            let msg;
+            switch (consulta.etapaFluxo) {
+                case 'PESSOA_DUPLICADA': 
+                    msg = 'Vocês possui uma reunião em agendamento, está na etapa de escolher o participante correto. Caso deseje cancelar a reunião em agendamento, digite "Cancelar reunião".'
+                    await axios(textMessage(numeroTel, msg));
 
                         break;
                     case 'CONFLITO_HORARIO':

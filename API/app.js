@@ -3,8 +3,8 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-// import envioLembrete from './bot/operacoes/lembrete.js';
-// import cron from "node-cron";
+import envioLembrete from './bot/operacoes/lembrete.js';
+import cron from "node-cron";
 
 const API = '/api';
 dotenv.config();
@@ -61,7 +61,6 @@ conn().then(()=> {
     //         console.log("Erro ao executar o cron", error)
     //     }
     // });
-
 })
 
 
