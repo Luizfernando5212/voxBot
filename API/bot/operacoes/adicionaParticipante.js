@@ -19,7 +19,9 @@ const adicionaParticipante = async (participante, reuniao, cb) => {
         reuniao: reuniaoId,
         conviteAceito: false
     }
-    const participanteDoc = new participantes(novoParticipante);
+    if (reuniao.organizador !== participanteId) {
+        const participanteDoc = new participantes(novoParticipante);
+    }
 
     try {
         await participanteDoc.save();
