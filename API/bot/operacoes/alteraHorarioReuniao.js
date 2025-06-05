@@ -36,7 +36,7 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto){
     try {
         let resultado = await promptAlteracaoHorario(texto);
         
-        if (!resultado.indAlteracaoHorario) {
+        if (!resultado.indAlteracaoHorario && !resultado.indMudancaDia) {
             console.log("Não quer alterar o horário")
             return false;
         } else if (resultado.dataHoraInicio === '') {
@@ -166,7 +166,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
 async function promptAlteracaoHorario(texto) {
     let horarioBrasil = dayjs().tz("America/Sao_Paulo");
     horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
-    
+
     let responseFormat = zodResponseFormat(Evento, 'evento');
     const reuniao_alterada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
