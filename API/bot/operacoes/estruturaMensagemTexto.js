@@ -3,6 +3,10 @@ import OpenAI from 'openai';
 import z from 'zod';
 import Setor from "../../model/setor.js";
 import dotenv from 'dotenv';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+dayjs.extend(utc);
+
 
 dotenv.config();
 
