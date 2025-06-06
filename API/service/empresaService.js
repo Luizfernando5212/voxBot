@@ -29,6 +29,7 @@ export default {
             const empresa = await Empresa.findById(id);
             return res.status(200).json(empresa);
         } catch (err) {
+            console.log(err)
             return res.status(400).json({ error: 'Error fetching Empresa' });
         }
     },
