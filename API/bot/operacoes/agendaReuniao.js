@@ -33,7 +33,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
 
     try {
         if (nomes.length === 0 && setor !== null) {
-            let participantes = await Pessoa.find({ setor: setor });
+            let participantes = await Pessoa.find({ setor: setor, _id { $ne: objReuniao.organizador} });
             if (participantes.length === 0) {
                 console.log('Nenhum participante encontrado para o setor:', setor);
                 return;
