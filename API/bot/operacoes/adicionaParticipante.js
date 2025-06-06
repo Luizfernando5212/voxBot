@@ -20,7 +20,11 @@ const adicionaParticipante = async (participante, reuniao, cb) => {
         conviteAceito: false
     }
     
-    const participanteDoc = new participantes(novoParticipante);
+    let participanteDoc;
+    
+    if (reuniao.organizador !== participanteId) {
+       participanteDoc = new participantes(novoParticipante);
+    }
     
     try {
         if (reuniao.organizador !== participanteId) {
