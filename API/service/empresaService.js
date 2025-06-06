@@ -29,7 +29,6 @@ export default {
             const empresa = await Empresa.findById(id);
             return res.status(200).json(empresa);
         } catch (err) {
-            console.log(err)
             return res.status(400).json({ error: 'Error fetching Empresa' });
         }
     },
@@ -81,6 +80,7 @@ export default {
             // const empresa = await Empresa.findByIdAndUpdate(req.params.id, req.body, { new: true });
             return res.status(200).json(empresa);
         } catch (err) {
+            console.log(err)
             return res.status(400).json({ error: 'Error updating Empresa' });
         }
     },
