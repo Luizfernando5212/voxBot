@@ -73,12 +73,14 @@ export default {
     async update(req, res) {
         try {
             const oldEmpresa = await Empresa.findById(req.params.id);
-
+            console.log(oldEmpresa)
             oldEmpresa.set(req.body);
+            console.log(oldEmpresa)
             const empresa = await oldEmpresa.save();
             // const empresa = await Empresa.findByIdAndUpdate(req.params.id, req.body, { new: true });
             return res.status(200).json(empresa);
         } catch (err) {
+            console.log(err)
             return res.status(400).json({ error: 'Error updating Empresa' });
         }
     },
