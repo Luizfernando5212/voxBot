@@ -13,7 +13,7 @@ var EmpresaSchema = new Schema(
         email: { type: String, required: true, trim: true, lowercase: true },
         password: { type: String },
         qtdFuncionarios: { type: Number, required: true, default: 0 },
-        status: { type: String, enum: ['A', 'I'], required: true, default: 'I' },
+        status: { type: String, enum: ['A', 'I'], required: true, default: 'A' },
         dataIniCompetencia: { type: Date, required: true, default: Date.now },
         dataFimCompetencia: { type: Date, required: true, default: Date.now },
         iniExpediente: { type: String, required: false },
