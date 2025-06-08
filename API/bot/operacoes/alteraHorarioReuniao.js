@@ -1,14 +1,13 @@
 import reuniao from "../../model/reuniao.js";
-import Participantes from "../../model/participantes.js";
-import telefones from '../../model/telefone.js';
 import axios from "axios";
-import { textMessage, templateMessage } from '../../utll/requestBuilder.js';
+import { textMessage } from '../../utll/requestBuilder.js';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import OpenAI from 'openai';
 import z from 'zod';
 import dotenv from 'dotenv';
+import enviaNotificacaoAlteracaoHorario from "./notificaAlteracaoReuniao.js";
 
-import { converteParaHorarioBrasilia, agoraBrasilia, converteParaHorarioUTC } from '../../utll/data.js';
+import { agoraBrasilia, converteParaHorarioUTC } from '../../utll/data.js';
 
 
 import dayjs from "dayjs";
@@ -60,7 +59,7 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto) {
                 consulta.reuniao = null;
                 await reuniao_encontrada.save()
                 await consulta.save();
-                await enviaNotificacaoAlteracaoHorario(reuniao_encontrada);
+                await enviaNotificacaoAlteracaoHorario(reuniao_encontrada, 'usuario_alterou_horario_reuniao');
                 return true;
             } catch (error) {
                 console.log(`Houve um problema na alteração do horário: ${error}`);
@@ -206,70 +205,7 @@ async function promptAlteracaoHorario(texto) {
     });
     let resultado = reuniao_alterada.choices[0].message.parsed;
 
-    console.log(`Resultado do OpenAI: ${JSON.stringify(resultado)}`);
-
     return resultado;
-}
-
-
-/**
- * A função enviaNotificacaoAlteracaoHorario envia uma notificação de alteração de horário de reunião para os participantes.
- * 
- * @param {Object} reuniao_encontrada - Objeto que contém os dados da reunião encontrada
- * @throws {Error} - Lança um erro caso não consiga enviar a notificação
- * @returns {Promise<void>} - Promise que resolve quando a notificação é enviada
- */
-async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
-    try {
-        const id_reuniao = reuniao_encontrada._id.toString();
-
-        const participantes = await Participantes.find({
-            reuniao: { $in: id_reuniao },
-            conviteAceito: true
-        });
-
-        const id_pessoa = participantes.map(p => p.pessoa.toString());
-
-        const telefone = await telefones.find({
-            pessoa: { $in: id_pessoa }
-        })
-
-        for (const participante of participantes) {
-
-            const tel = telefone.find(t => t.pessoa.toString() === participante.pessoa.toString());
-
-
-            console.log('reuniao_encontrada', reuniao_encontrada);
-            if (tel) {
-                try {
-                    if (!reuniao_encontrada.dataHoraInicio || !reuniao_encontrada.dataHoraFim) {
-                        console.warn("Não foi possível enviar o lembrete. A reunião está com data/hora de início ou fim ausente.");
-                        return; // ou throw new Error(...)
-                    }
-
-                    console.log(reuniao_encontrada.dataHoraInicio, reuniao_encontrada.dataHoraFim);
-
-                    const dataHoraInicio = converteParaHorarioBrasilia(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
-                    const dataHoraFim = converteParaHorarioBrasilia(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
-
-                    console.log("dataHoraInicio", dataHoraInicio);
-                    console.log("dataHoraFim", dataHoraFim);
-
-                    const template = {
-                        nome: 'usuario_alterou_horario_reuniao',
-                        parameters: [reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim]
-                    };
-                    await axios(
-                        templateMessage(tel.numero, template));
-                    console.log("Lembrete enviado")
-                } catch (error) {
-                    console.log("Não foi possível enviar o lembrete", error)
-                }
-            }
-        }
-    } catch (error) {
-        console.log(`Não foi possível notificar os participantes: ${error}`);
-    }
 }
 
 export default alteraHorarioReuniao;

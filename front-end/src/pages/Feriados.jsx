@@ -113,27 +113,6 @@ export default function Feriados() {
               setShowModal(true);
             }}>Novo feriado</button>
           </div>
-          {/* <form onSubmit={handleSubmit}>
-            <label>
-              Descrição:
-              <input
-                type="text"
-                value={descricao}
-                onChange={(e) => setDescricao(e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Data:
-              <input
-                type="date"
-                value={data}
-                onChange={(e) => setData(e.target.value)}
-                required
-              />
-            </label>
-            <button type="submit">Cadastrar</button>
-          </form> */}
 
           {loading ? (
             <p>Carregando feriados...</p>
@@ -194,70 +173,5 @@ export default function Feriados() {
         onSubmit={handleSubmit} // Handle form submission
       />
     </>
-
-    // <>
-    //       <Nav />
-
-    //       <div className="content-background">
-    //         <div className="card">
-    //           <div className="card-header">
-    //             <h2>Feriados</h2>
-    //             <button className="btn-primary" onClick={(e) => {
-    //               setFormData({descricao: '', data: '', empresa: empresa.empresa._id});
-    //               setEditMode('create');
-    //               setShowModal(true);
-    //             }}>Novo Feriado</button>
-    //           </div>
-    //           <table className="table">
-    //             <thead>
-    //               <tr>
-    //                 <th>Nome</th>
-    //                 <th>data</th>
-    //               </tr>
-    //             </thead>
-    //             <tbody>
-    //               {feriados.length === 0 ? (
-    //                 <tr>
-    //                   <td colSpan="6" style={{ textAlign: 'center' }}>Nenhum feriado encontrado</td>
-    //                 </tr>
-    //               ) : (
-    //                 feriados.map((feriado) => (
-    //                   <tr key={feriado._id}>
-    //                     <td>{feriado.descricao}</td>
-    //                     <td>{new Date(feriado.data).toLocaleDateString('pt-BR')}</td>
-    //                     <td>
-    //                       <button className="btn-secondary"
-    //                         onClick={() => {
-    //                           setFormData(feriado);
-    //                           setEditMode('edit');
-    //                           setShowModal(true);
-    //                         }}>Editar</button>
-    //                       <button className="btn-danger"
-    //                         onClick={() => {
-    //                           handleDelete(feriado._id);
-    //                         }}>Remover</button>
-    //                     </td>
-    //                   </tr>
-    //                 ))
-    //               )}
-    //             </tbody>
-    //           </table>
-    //         </div>
-    //       </div>
-
-    //       <ModalEdit
-    //         visible={showModal} // Change to true to show the modal
-    //         title={editMode === 'edit' ? 'Editar feriado' : 'Novo feriado'}
-    //         fields={fields}
-    //         data={formData} // Initial data for the modal
-    //         onChange={setFormData} // Handle changes in the modal
-    //         onClose={() => {
-    //           setShowModal(false);
-    //           setEditMode('create'); // volta ao estado inicial ao fechar
-    //           setFormData({});
-    //         }} // Handle closing the modal
-    //         onSubmit={handleSubmit} // Handle form submission
-    //       />
-    //     </>
   );
 }
