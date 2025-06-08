@@ -9,6 +9,9 @@ import z from 'zod';
 import dotenv from 'dotenv';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
+
+import { converteParaHorarioBrasilia, agoraBrasilia, converteParaHorarioUTC } from '../../utll/data.js';
+
 dayjs.extend(utc);
 
 dotenv.config();
@@ -38,11 +41,11 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
             console.log("Não quer cancelar")
             return false;
         } else if (resultado.dataHoraInicio === '') {
-            if(consulta.etapaFluxo !== 'INICIAL' && consulta.reuniao !== null) {
+            if (consulta.etapaFluxo !== 'INICIAL' && consulta.reuniao !== null) {
                 const reuniao_atual = await reuniao.findById(consulta.reuniao);
                 reuniao_atual.status = 'Cancelada';
                 await reuniao_atual.save();
-                
+
                 consulta.etapaFluxo = 'INICIAL';
                 consulta.reuniao = null;
                 await consulta.save();
@@ -53,7 +56,10 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
             }
             return true;
         } else {
-            const dataHoraInicio = validaConversaoUTC(resultado.dataHoraInicio);
+            const dataHoraInicio = converteParaHorarioUTC(resultado.dataHoraInicio);
+
+            console.log('dataHoraInicio', dataHoraInicio);
+            console.log('resultado', resultado);
 
             const reuniao_encontrada = await reuniao.findOne({
                 // titulo: resposta.titulo,
@@ -89,22 +95,24 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
  * @returns {Object} - Objeto com as informações da reunião
  */
 async function promptCancelaReuniao(texto) {
-    let horarioBrasil = dayjs().tz("America/Sao_Paulo");
-    horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+    let horarioBrasil = agoraBrasilia();
 
     let responseFormat = zodResponseFormat(Evento, 'evento');
     const reuniao_cancelada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário quer cancelar uma reunião, não produza informações, hoje é dia ' + horarioBrasil +
-                ' o usuário pode informar a dataHoraInicio da reunião que deseja cancelar, ou não informar nada.' +
-                ' dataHoraInicio se refere a data e hora de início da reunião.' +
-                ' indCancelamento diz se o usuário está querendo cancelar uma reunião.' },
+            {
+                role: 'system', content: 'Extraia as informações do evento e verifique se o usuário quer cancelar uma reunião, não produza informações, hoje é dia ' + horarioBrasil +
+                    'Importante: "Considere que todas as referências de data e hora feitas pelo usuário estão no fuso horário de Brasília (GMT-3). Além de indicarem datas futuras"' +
+                    ' o usuário pode informar a dataHoraInicio da reunião que deseja cancelar, ou não informar nada.' +
+                    ' dataHoraInicio se refere a data e hora de início da reunião.' +
+                    ' indCancelamento diz se o usuário está querendo cancelar uma reunião.'
+            },
             { role: 'user', content: texto },
         ],
         response_format: responseFormat,
     });
-    
+
     return reuniao_cancelada.choices[0].message.parsed;
 }
 
@@ -118,67 +126,51 @@ async function promptCancelaReuniao(texto) {
  */
 async function enviaNotificacaoReuniaoCancelada(reuniao_encontrada) {
     try {
-            const id_reuniao = reuniao_encontrada._id.toString();
-    
-            const parcitipante = await participantes.find({
-                reuniao: { $in: id_reuniao },
-                conviteAceito: true
-            });
-    
-            const id_pessoa = parcitipante.map(p => p.pessoa.toString());
-    
-            const telefone = await telefones.find({
-                pessoa: { $in: id_pessoa }
-            })
-    
-            for (const participante of parcitipante) {
-                
-                const tel = telefone.find(t => t.pessoa.toString() === participante.pessoa.toString());
-                
-                if (tel){
-                    try {
-                        const dataHoraInicio = dayjs.utc(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
-                        const dataHoraFim = dayjs.utc(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
-                        const template = {
-                            nome: 'usuario_cancelou_reuniao', 
-                            parameters: [reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim]
-                        };
-                        await axios(
-                            templateMessage(tel.numero, template));
-                        console.log("Lembrete enviado")
-                    } catch (error) {
-                        console.log("Não foi possível enviar o lembrete", error)
+        const id_reuniao = reuniao_encontrada._id.toString();
+
+        const parcitipante = await participantes.find({
+            reuniao: { $in: id_reuniao },
+            conviteAceito: true
+        });
+
+        const id_pessoa = parcitipante.map(p => p.pessoa.toString());
+
+        const telefone = await telefones.find({
+            pessoa: { $in: id_pessoa }
+        })
+
+        for (const participante of parcitipante) {
+
+            const tel = telefone.find(t => t.pessoa.toString() === participante.pessoa.toString());
+
+            if (tel) {
+                try {
+                    if (!reuniao_encontrada.dataHoraInicio || !reuniao_encontrada.dataHoraFim) {
+                        console.warn("Não foi possível enviar o lembrete. A reunião está com data/hora de início ou fim ausente.");
+                        return; // ou throw new Error(...)
                     }
+
+                    console.log(reuniao_encontrada.dataHoraInicio, reuniao_encontrada.dataHoraFim);
+
+                    const dataHoraInicio = converteParaHorarioBrasilia(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
+                    const dataHoraFim = converteParaHorarioBrasilia(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
+
+                    const template = {
+                        nome: 'usuario_cancelou_reuniao',
+                        parameters: [reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim],
+                        language: 'pt_PT'
+                    };
+                    await axios(
+                        templateMessage(tel.numero, template));
+                    console.log("Lembrete enviado")
+                } catch (error) {
+                    console.log("Não foi possível enviar o lembrete", error)
                 }
             }
-        } catch (error) {
-            console.log(`Não foi possível notificar os participantes: ${error}`);
         }
-}
-
-/**
- * Função que valida se a data e hora recebida está no formato UTC e converte para o horário de Brasília.
- * 
- * @param {String} dataHoraISO - Data e hora no formato ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)
- * @returns {Date|String} - Retorna Date quando há conversão por parte da OpenAI, ou a string original se não houver conversão.
- */
-function validaConversaoUTC(dataHoraISO){
-    if (dataHoraISO === '' || dataHoraISO === null) {
-        console.log('Data e hora não informadas.');
-        return;
+    } catch (error) {
+        console.log(`Não foi possível notificar os participantes: ${error}`);
     }
-
-    console.log(`Data e hora recebida: ${dataHoraISO}`);
-    
-    if (dataHoraISO.includes('-03:00')) {
-        console.log("O horário foi convertido pela openAI.")
-        let horarioRecebido = dayjs(dataHoraISO)
-        horarioRecebido = horarioRecebido.subtract(3, 'hour');
-        return horarioRecebido.toDate();
-    }
-   
-    return dataHoraISO;
-
 }
 
 export default cancelaReuniao;

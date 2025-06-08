@@ -1,14 +1,35 @@
 import Reuniao from '../../model/reuniao.js';
 import participantes from '../../model/participantes.js';
+import Feriado from '../../model/feriado.js';
 import findWithJoinCascade from '../../utll/mongoQuery.js';
 import { format } from 'date-fns-tz';
+import { startOfDay, endOfDay } from 'date-fns';
+import { converteParaHorarioBrasilia } from '../../utll/data.js';
 
+async function isFeriado(date, empresaId) {
+    const data = converteParaHorarioBrasilia(date);
+    const inicioDia = startOfDay(data);
+    const fimDia = endOfDay(data);
+
+    const feriado = await Feriado.findOne({
+        empresa: empresaId,
+        data: { $gte: inicioDia, $lte: fimDia },
+        status: 'A', // ativo
+    });
+
+    return !!feriado;
+}
 
 async function haConflitoHorario(consulta, idReuniao, callback) {
 
     const reuniao = await Reuniao.findById(idReuniao);
     const { dataHoraInicio: inicio, dataHoraFim: fim } = reuniao.toObject();
     const duracaoReuniao = new Date(fim) - new Date(inicio); // Duração da reunião em milissegundos
+
+    const ehFeriado = await isFeriado(inicio, consulta.pessoa.setor.empresa._id);
+    if (ehFeriado) {
+        return callback(true, [], 'Data selecionada não é dia útil, escolha outro dia.');
+    }
 
     const pessoas = await participantes.find({ reuniao: idReuniao }).select('pessoa');
     const idsParticipantes = pessoas.map((pessoa) => pessoa.pessoa);
@@ -30,16 +51,16 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
             const [horaInicio, minutoInicio] = expediente.inicio.split(":");
             expedienteInicio = new Date(inicio);
             expedienteInicio.setHours(parseInt(horaInicio), parseInt(minutoInicio), 0, 0);
-    
+
             const [horaFim, minutoFim] = expediente.fim.split(":");
             expedienteFim = new Date(fim);
             expedienteFim.setHours(parseInt(horaFim), parseInt(minutoFim), 0, 0);
         }
-    
+
         reunioesAgendadas = reunioesAgendadas.map((reuniao) => {
             return formatarReuniao(reuniao);
         });
-    
+
         const haConflito = reunioesAgendadas.some((r) => {
             return (
                 (inicio >= r.dataHoraInicio && inicio < r.dataHoraFim) ||
@@ -47,12 +68,12 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
                 (inicio <= r.dataHoraInicio && fim >= r.dataHoraFim)
             );
         });
-    
+
         if (haConflito) {
-    
+
             const intervalosLivres = calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioesAgendadas);
             const sugestoesSemConflito = horariosAlternativos(intervalosLivres, duracaoReuniao);
-    
+
             callback(true, sugestoesSemConflito); // Conflito de horário encontrado
         } else {
             callback(false, []); // Sem conflito de horário
@@ -60,7 +81,7 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
     } else {
         callback(false, []); // Sem reuniões agendadas
     }
-    
+
 }
 
 function formatarReuniao(reuniao) {
@@ -108,7 +129,7 @@ async function obterReunioesAgendadas(idsParticipantes, inicio, fim) {
 }
 
 function calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioes) {
-    const reunioesOrdenadas = [...reunioes].sort((a, b) => 
+    const reunioesOrdenadas = [...reunioes].sort((a, b) =>
         new Date(a.dataHoraInicio) - new Date(b.dataHoraInicio)
     );
 

@@ -7,6 +7,9 @@ import e from "express";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
+
+import { converteParaHorarioBrasilia } from '../../utll/data.js';
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -39,8 +42,8 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
                 participante.save();
                 consulta.save();
                 await reuniaoAtual.save();
-                const horaInicio = dayjs(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm');
-                const horaFim = dayjs(reuniaoAtual.dataHoraFim).format('DD/MM/YYYY HH:mm');
+                const horaInicio = converteParaHorarioBrasilia(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm [até] ');
+                const horaFim = converteParaHorarioBrasilia(reuniaoAtual.dataHoraFim).format('HH:mm');
 
                 await axios(textMessage(numeroTel, `Reunião agendada com sucesso para ${horaInicio} até ${horaFim}.`));
                 mensagemConfirmacao(consulta, reuniaoAtual);
@@ -60,7 +63,6 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
             try {
                 const participante = await participates.findOne({ pessoa: consulta.pessoa._id, reuniao: reuniaoId });
                 const resposta = mensagem.payload;
-                console.log('Resposta do participante:', resposta);
                 if (resposta === 'Aceitar') {
                     participante.conviteAceito = true;
                     participante.save();

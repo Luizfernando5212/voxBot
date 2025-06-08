@@ -25,8 +25,13 @@ const realizaValidacoes = async (consulta, naoEncontrados = [], qtdDuplicados = 
         await consulta.save();
     } else {
         // Validar se todos os participantes possuem disponibilidade
-        const enviaSugestoes = async (haConflito, sugestoes) => {
+        const enviaSugestoes = async (haConflito, sugestoes = [], msgFeriado) => {
             if (haConflito) {
+                if (msgFeriado) {
+                    await axios(textMessage(consulta.numero, msgFeriado));
+                    consulta.etapaFluxo = 'INICIAL';
+                    await consulta.save();
+                } else {
                 let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos no mesmo dia:`;
                 let listaSugestoesHorarios = sugestoes.map(sugestao => {
                     const horaInicio = format(sugestao.inicio, 'HH:mm', { locale: ptBR });
@@ -37,10 +42,11 @@ const realizaValidacoes = async (consulta, naoEncontrados = [], qtdDuplicados = 
                     };
                 });
                 await axios(interactiveListMessage(consulta.numero, mensagemSugestoes, listaSugestoesHorarios, 'Sugestões de horário'));
-
+                
                 consulta.etapaFluxo = 'CONFLITO_HORARIO';
                 consulta.reuniao = novaReuniao._id;
                 await consulta.save();
+                }
             } else {
                 mensagemConfirmacao(consulta, novaReuniao, listaParticipantes);
             }

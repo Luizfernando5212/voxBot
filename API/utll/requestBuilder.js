@@ -263,7 +263,7 @@ export const templateMessage = (from, template) => {
             recipient_type: "individual",
             to: from,
             type: "template",
-            template: buildTemplate(template.nome, template.parameters),
+            template: buildTemplate(template.nome, template.parameters, template.language),
         },
     }
     return body;
@@ -276,11 +276,11 @@ export const templateMessage = (from, template) => {
  * @param {Array} parameters - Lista de parâmetros a serem passados para o template
  * @returns {Object} - Retorna um objeto template do template
  */
-const buildTemplate = (nome, parameters) => {
+const buildTemplate = (nome, parameters, language = 'pt_BR') => {
     return {
         name: nome,
         language: {
-            code: "pt_BR",
+            code: language,
         },
         components: [{
             type: "body",

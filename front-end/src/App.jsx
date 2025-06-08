@@ -4,6 +4,7 @@ import Signup from './pages/Signup';
 import Empresa from './pages/Empresa';
 import Funcionario from './pages/Funcionario';
 import Setor from './pages/Setor';
+import Feriados from './pages/Feriados';
 import React from 'react';
 import PrivateRoute from './routes/PrivateRoute';
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/empresa" element={<PrivateRoute><Empresa /></PrivateRoute>} />
         <Route path="/funcionario" element={<Funcionario />} />
         <Route path="/setor" element={<Setor />} />
+        <Route path="/feriados" element={<Feriados />} />
         {/* <Route path="/planos" element={<Planos />} /> */}
       </Routes>
     </BrowserRouter>

@@ -62,9 +62,9 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                 return true;
 
             } else {
-                var now = moment.tz("America/Sao_Paulo");
-                now.subtract(3, 'hours');
-                now = now.toDate();
+                var now = moment.tz("America/Sao_Paulo").toDate();
+                // now.subtract(3, 'hours');
+                // now = now.toDate();
 
                 const reunioes_encontradas = await reuniao.find({
                     dataHoraInicio: { $gte: now },
@@ -87,9 +87,9 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
             }
 
         } else {
-            var now = moment.tz("America/Sao_Paulo");
-            now.subtract(3, 'hours');
-            now = now.toDate();
+            var now = moment.tz("America/Sao_Paulo").toDate();
+            // now.subtract(3, 'hours');
+            // now = now.toDate();
 
             const reunioes_encontradas = await reuniao.find({
                 dataHoraInicio: { $gte: now },

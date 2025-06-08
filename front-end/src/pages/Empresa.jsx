@@ -9,11 +9,15 @@ import ModalEdit from '../components/ModalEdit';
 
 import { API_URL } from '../config/api';
 
+import { useNavigate } from 'react-router-dom';
+
 export default function Empresa() {
   const [objeto, setObjeto] = useState({});
   const [showModal, setShowModal] = useState(false);
 
   const { empresa } = useAuth();
+  
+  const navigate = useNavigate();
 
   const [editData, setEditData] = useState(empresa.empresa);
 
@@ -57,6 +61,19 @@ export default function Empresa() {
   return (
     <>
       <Nav />
+
+      <div className="content-background">
+        <div className="card">
+          {/* ... */}
+          <button
+            className="btn-primary"
+            onClick={() => navigate('/feriados')}
+          >
+            Gerenciar Feriados
+          </button>
+          {/* restante da tabela */}
+        </div>
+      </div>
 
       <div className="content-background">
         <div className="card">

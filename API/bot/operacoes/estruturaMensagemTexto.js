@@ -33,11 +33,9 @@ const Evento = z.object({
 async function estruturaMensagemTexto(texto) {
     try {
         // Trocando o new Date() para o horário do Brasil, pois o date converte para UTC e isso causa conflito quando o horário é 21h da noite, pois joga para o dia seguinte.
-        let horarioBrasil = dayjs().tz("America/Sao_Paulo");
-        horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+        let horarioBrasil = dayjs().tz("America/Sao_Paulo").toDate();
+        // horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
         
-        console.log('horarioBrasil', horarioBrasil);
-
         let responseFormat = zodResponseFormat(Evento, 'evento');
         const reuniao = await openai.beta.chat.completions.parse({
             model: 'gpt-4o-mini-2024-07-18',
@@ -55,7 +53,6 @@ async function estruturaMensagemTexto(texto) {
         });
         let resultado = reuniao.choices[0].message.parsed;
 
-        console.log('resultado', resultado);
         if (resultado.isReuniao) {
             if (resultado.isSuficiente) {
                 if (resultado.setor === '') {
