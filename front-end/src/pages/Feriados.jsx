@@ -20,7 +20,7 @@ export default function Feriados() {
 
   const fetchFeriados = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/feriado`, {
+      const res = await fetch(`${API_URL}/api/empresa/${empresa.empresa._id}/feriado`, {
         headers: {
           Authorization: `Bearer ${empresa.token}`,
         },
