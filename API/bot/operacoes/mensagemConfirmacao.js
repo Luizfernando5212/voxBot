@@ -20,6 +20,8 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
 
     let listaSemOrganizador = [];
 
+
+    console.log(reuniao.status, consulta.etapaFluxo);
     if (listaParticipantes.length === 0) {
         // Buscar participantes relacionados à reunião
         const participantes = await Participantes.find({ reuniao: reuniao._id })
@@ -42,12 +44,19 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
         const horarioInicio = dayjs(reuniao.dataHoraInicio).format('DD/MM/YYYY[,] HH:mm'); // Quando convertemos o formato de data da OpenAI para tz("America/Sao_Paulo"), o horário fica incorreto na visualização, portanto não foi utilizado o tz nesse trecho.
         const mensagem = `Gostaria de confirmar a reunião ${reuniao.titulo} no dia ${horarioInicio}, com: ${listaParticipantes.join(', ')} ?`;
         const botoes = [{ id: 'CONFIRMAR', nome: 'Confirmar' }, { id: 'CANCELAR', nome: 'Cancelar' }];
-        await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
+        
+        try {
+            await axios(interactiveMessage(consulta.numero, mensagem, botoes, 1));
+        } catch (err) {
+            console.log('número de telefone não cadastrado no whatsapp');
+        }
         await consulta.save();
     } else if (reuniao.status === 'Agendada') {
         listaParticipantes = listaSemOrganizador.map(p => p.pessoa._id);
+        console.log('Lista de participantes:', listaParticipantes);
         const organizador = await pessoa.findById(reuniao.organizador);
         const telefones = await telefone.find({ pessoa: { $in: listaParticipantes } });
+        console.log('Telefones encontrados:', telefones);
         telefones.forEach(t => {
             t.reuniao = reuniao._id;
             t.save();
@@ -63,7 +72,12 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
         };
 
         numeros.forEach(async (numero) => {
-            await axios(templateMessage(numero, template));
+            try {
+                await axios(templateMessage(numero, template));
+            } catch(err) {
+                console.log('Número de telefone não cadastrado no whatsapp', err)
+            }
+            
         })
     }
 }

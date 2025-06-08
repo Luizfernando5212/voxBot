@@ -7,14 +7,11 @@ const confirmarHorario = async (consulta, numeroTel, mensagem, res) => {
     const reuniaoId = consulta.reuniao._id;
     const reuniaoAtual = await reuniao.findById(reuniaoId);
 
-    console.log('reuniaoAtual', reuniaoAtual);
     if (reuniaoAtual) {
         if (reuniaoAtual.status === 'Aguardando') {
             const horario = mensagem.list_reply.id.split(' - ');
             const horaInicio = new Date(horario[0]);
             const horaFim = new Date(horario[1]);
-            console.log(horario)
-            console.log(horaInicio, horaFim);
             reuniaoAtual.dataHoraInicio = horaInicio;
             reuniaoAtual.dataHoraFim = horaFim;
             await reuniaoAtual.save();

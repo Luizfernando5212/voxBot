@@ -1,5 +1,5 @@
 import reuniao from "../../model/reuniao.js";
-import participantes from "../../model/participantes.js";
+import Participantes from "../../model/participantes.js";
 import telefones from '../../model/telefone.js';
 import axios from "axios";
 import { textMessage, templateMessage } from '../../utll/requestBuilder.js';
@@ -34,8 +34,7 @@ const Evento = z.object({
  */
 async function alteraHorarioReuniao(consulta, numeroTel, texto){
     try {
-        let resultado = await promptAlteracaoHorario(texto);
-        
+        let resultado = await promptAlteracaoHorario(texto);        
         if (!resultado.indAlteracaoHorario && !resultado.indMudancaDia) {
             console.log("Não quer alterar o horário")
             return false;
@@ -83,26 +82,42 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
         let horarioBrasil = dayjs().tz("America/Sao_Paulo");
         horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
 
-        console.log(resultado.dataHoraInicio)
+
+        console.log(resultado)
         let dates = {
             dataHoraInicio: new Date(validaConversaoUTC(resultado.dataHoraInicio)),
             novoHorarioInicio: new Date(validaConversaoUTC(resultado.novoHorarioInicio)),
-            novoHorarioFim: new Date(validaConversaoUTC(resultado.novoHorarioFim))
         }
-        console.log(dates);
+        
 
         const reuniao_encontrada = await reuniao.findOne({
-            dataHoraInicio: dates.dataHoraInicio,
+            dataHoraInicio: resultado.dataHoraInicio,
             status: 'Agendada',
             "organizador": consulta.pessoa._id
         })
+
+        console.log(`Reunião encontrada: ${reuniao_encontrada}`);
+
 
         if (reuniao_encontrada === null) {
             await axios(textMessage(numeroTel, '❗Reunião não encontrada, verifique se informou corretamente a data/hora da reunião e qual período acontecerá (Manhã, Tarde ou Noite).'));
             return null;
         }
 
-        if (reuniao_encontrada.dataHoraInicio.getTime() === dates.novoHorarioInicio.getTime() && !isNaN(dates.novoHorarioInicio.getTime()) && reuniao_encontrada.dataHoraFim.getTime() === dates.novoHorarioFim.getTime()) {
+
+        const duracaoReuniao = dayjs.utc(reuniao_encontrada.dataHoraFim).diff(dayjs.utc(reuniao_encontrada.dataHoraInicio), 'minute');
+
+        if (resultado.novoHorarioFim || resultado.novoHorarioFim !== '') {
+            dates.novoHorarioFim = new Date(validaConversaoUTC(resultado.novoHorarioFim));
+        } else {
+            dates.novoHorarioFim = new Date(dates.novoHorarioInicio.getTime() + duracaoReuniao * 60000); // Adiciona a duração da reunião ao novo horário de início
+        }
+
+        console.log('dates: ' + dates);
+
+        if (reuniao_encontrada.dataHoraInicio.getTime() === dates.novoHorarioInicio.getTime() && 
+        !isNaN(dates.novoHorarioInicio.getTime()) && 
+        reuniao_encontrada.dataHoraFim.getTime() === dates.novoHorarioFim.getTime()) {
             await axios(textMessage(numeroTel, '❗A reunião já possui esse horário.'));
             return null;
         }
@@ -119,11 +134,15 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             )
         }
 
+        console.log(resultado)
+
         reuniao_encontrada.dataHoraInicio = dates.novoHorarioInicio
         
-        if (resultado.novoHorarioFim) {
+        if (dates.novoHorarioFim) {
             reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
         }
+
+        console.log(reuniao_encontrada)
 
         if (dates.novoHorarioInicio.getTime() === reuniao_encontrada.dataHoraFim.getTime()){
             await axios(textMessage(numeroTel, '❗O horário de início não pode ser igual ao horário de fim da reunião. Por gentileza informe um horário de início e de fim para a reunião;'));
@@ -135,7 +154,6 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta){
             await axios(textMessage(numeroTel, '❗Não é possível alterar o horário da reunião para o passado, por gentileza informe um novo horário para a reunião iniciar.'));
             return null;
         }
-        
         const validaExitenciaReuniao = await reuniao.find({
             $or: [
                 {
@@ -173,13 +191,15 @@ async function promptAlteracaoHorario(texto) {
     let horarioBrasil = dayjs().tz("America/Sao_Paulo");
     horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
 
+    console.log(`Horário do Brasil: ${horarioBrasil}`);
+
     let responseFormat = zodResponseFormat(Evento, 'evento');
     const reuniao_alterada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
             { role: 'system', content: 'Extraia as informações do evento, identifique horários e verifique se o usuário deseja alterar o horário de uma reunião, você deve compreender linguagens como hoje, amanhã, semana que vem e outras variações. Não produza informações, hoje é dia ' + horarioBrasil +
-            ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
-            ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, não acrescente em hipótese nenhuma o -03:00, mantenha o Z no final.' +
+            ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada, mantenha o Z no final.' +
+            ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião, mantenha o Z no final.' +
             ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião.' +
             ' indAlteracaoHorario é um booleano que indica se o usuário está querendo alterar o horário de uma reunião.' +
             ' indMudancaDia é um booleano que indica se o usuário está mudando o dia da reunião e não só o horário.' },
@@ -203,18 +223,19 @@ async function enviaNotificacaoAlteracaoHorario(reuniao_encontrada) {
     try {
         const id_reuniao = reuniao_encontrada._id.toString();
 
-        const parcitipante = await participantes.find({
+        const participantes = await Participantes.find({
             reuniao: { $in: id_reuniao },
             conviteAceito: true
         });
 
-        const id_pessoa = parcitipante.map(p => p.pessoa.toString());
+        console.log(`Participantes encontrados: ${participantes.length}`);
+        const id_pessoa = participantes.map(p => p.pessoa.toString());
 
         const telefone = await telefones.find({
             pessoa: { $in: id_pessoa }
         })
 
-        for (const participante of parcitipante) {
+        for (const participante of participantes) {
             
             const tel = telefone.find(t => t.pessoa.toString() === participante.pessoa.toString());
             

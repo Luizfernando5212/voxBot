@@ -1,0 +1,14 @@
+{
+  "name": "testes",
+  "version": "1.0.0",
+  "description": "testes automatizados e de carga",
+  "main": "testes_postman_jest.test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luiz Fernando",
+  "license": "ISC",
+  "dependencies": {
+    "jest": "^29.7.0"
+  }
+}

@@ -36,10 +36,12 @@ ________________
 
 📅 *4. Listar reuniões de um dia específico*
 Informe o dia que deseja consultar — pode ser uma data exata ou relativa.
+Não informe data alguma para buscar todas as as reuniões agendadas 
 ✅ *Exemplo*:
 
 “Quais são as reuniões marcadas para o dia 12 de junho?”
 “Quais reuniões tenho na sexta-feira?”
+“Listar minhas reuniões”
 
 Fique à vontade para me mandar sua solicitação quando quiser! Estou aqui para facilitar sua rotina de agendamentos. 😊`;
 

@@ -36,12 +36,14 @@ async function estruturaMensagemTexto(texto) {
         let horarioBrasil = dayjs().tz("America/Sao_Paulo");
         horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
         
+        console.log('horarioBrasil', horarioBrasil);
+
         let responseFormat = zodResponseFormat(Evento, 'evento');
         const reuniao = await openai.beta.chat.completions.parse({
             model: 'gpt-4o-mini-2024-07-18',
             messages: [
                 { role: 'system', content: 'Extraia as informações do evento/reunião, não produza informações, hoje é dia ' + horarioBrasil +
-                    ' E a reunião deve ser agendada para o futuro, não produza informações que não estejam explícitas no texto.' +
+                    ' assuma que a data sempre será no futuro, não produza informações que não estejam explícitas no texto.' +
                     ' titulo, dataHoraInicio, dataHoraFim, (participantes ou setor) são informações obrigatórias.' +
                     // ' Em dataHoraInicio e dataHoraFim, converta para UTC.' +
                     ' Você deve saber diferencias um setor de uma pessoa, o setor é o nome do departamento e a pessoa é o nome/apelido do funcionário.' +
@@ -52,14 +54,24 @@ async function estruturaMensagemTexto(texto) {
             response_format: responseFormat,
         });
         let resultado = reuniao.choices[0].message.parsed;
+
+        console.log('resultado', resultado);
         if (resultado.isReuniao) {
             if (resultado.isSuficiente) {
                 if (resultado.setor === '') {
+                    let dataHoraInicio = dayjs(resultado.dataHoraInicio).tz("America/Sao_Paulo").toDate();
+                    if (dataHoraInicio < horarioBrasil) {
+                        return 'A data e hora de início da reunião não pode ser no passado. Por favor, informe uma data e hora futura.';
+                    }
                     resultado.setor = null;
                     return resultado;
                 } else {
                     // Trecho ficará responsável por buscar o setor no banco de dados
                     // e substituir o valor do setor no objeto resultado
+                    let dataHoraInicio = dayjs(resultado.dataHoraInicio).tz("America/Sao_Paulo").toDate();
+                    if (dataHoraInicio < horarioBrasil) {
+                        return 'A data e hora de início da reunião não pode ser no passado. Por favor, informe uma data e hora futura.';
+                    }
                     const setor = await Setor.find({ descricao: resultado.setor });
                     resultado.setor = setor[0]._id;
                     return resultado;

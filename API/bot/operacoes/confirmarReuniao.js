@@ -20,8 +20,12 @@ dayjs.extend(timezone);
  * @returns {Object} - Retorna resposta da requisição
  */
 const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
+    if (!consulta.reuniao?._id) {
+        res.status(200).json({ message: 'Não há reunião para ser confirmada' });
+        return;
+    }
     const reuniaoId = consulta.reuniao._id;
-    const reuniaoAtual = await reuniao.findById(reuniaoId);
+    let reuniaoAtual = await reuniao.findById(reuniaoId);    
 
     if (reuniaoAtual && consulta.etapaFluxo === 'CONFIRMACAO') {
         if (reuniaoAtual.status === 'Aguardando') {
@@ -35,9 +39,8 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
                 participante.save();
                 consulta.save();
                 await reuniaoAtual.save();
-                      
                 const horaInicio = dayjs(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm');
-                const horaFim = dayjs(reuniaoAtual.dataHoraFim).format('DD/MM/YYYY HH:mm')
+                const horaFim = dayjs(reuniaoAtual.dataHoraFim).format('DD/MM/YYYY HH:mm');
 
                 await axios(textMessage(numeroTel, `Reunião agendada com sucesso para ${horaInicio} até ${horaFim}.`));
                 mensagemConfirmacao(consulta, reuniaoAtual);
@@ -53,7 +56,6 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
             return res.status(400).json({ error: 'Reunião já agendada ou cancelada' });
         }
     } else {
-        console.log(reuniaoAtual.status, reuniaoAtual.status === 'Agendada');
         if (reuniaoAtual.status === 'Agendada') {
             try {
                 const participante = await participates.findOne({ pessoa: consulta.pessoa._id, reuniao: reuniaoId });

@@ -10,6 +10,46 @@ import { format } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
 import dayjs from 'dayjs';
 
+const realizaValidacoes = async (consulta, naoEncontrados = [], qtdDuplicados = 0, novaReuniao, listaParticipantes) => {
+    if (naoEncontrados.length > 0) {
+        let mensagemNaoEncontrados = `As seguintes pessoas não foram encontradas: ${naoEncontrados.join(', ')}.`;
+
+        await axios(textMessage(consulta.numero, mensagemNaoEncontrados));
+        await axios(textMessage(consulta.numero, 'Verifique o(s) nome(s) ou consulte o administrador e tente novamente.'));
+    } else if (qtdDuplicados > 0) {
+        // Atualizar qtdDuplicados na reunião
+        novaReuniao.qtdDuplicados = qtdDuplicados;
+        await novaReuniao.save();
+        consulta.reuniao = novaReuniao._id;
+        consulta.etapaFluxo = 'PESSOA_DUPLICADA';
+        await consulta.save();
+    } else {
+        // Validar se todos os participantes possuem disponibilidade
+        const enviaSugestoes = async (haConflito, sugestoes) => {
+            if (haConflito) {
+                let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos no mesmo dia:`;
+                let listaSugestoesHorarios = sugestoes.map(sugestao => {
+                    const horaInicio = format(sugestao.inicio, 'HH:mm', { locale: ptBR });
+                    const horaFim = format(sugestao.fim, 'HH:mm', { locale: ptBR });
+                    return {
+                        id: `${sugestao.inicio} - ${sugestao.fim}`,
+                        nome: `${horaInicio} - ${horaFim}`
+                    };
+                });
+                await axios(interactiveListMessage(consulta.numero, mensagemSugestoes, listaSugestoesHorarios, 'Sugestões de horário'));
+
+                consulta.etapaFluxo = 'CONFLITO_HORARIO';
+                consulta.reuniao = novaReuniao._id;
+                await consulta.save();
+            } else {
+                mensagemConfirmacao(consulta, novaReuniao, listaParticipantes);
+            }
+        }
+
+        await haConflitoHorario(consulta, novaReuniao._id, enviaSugestoes);
+    }
+}
+
 /**
  * 
  * @param {Object} consulta - Objeto de consulta de pessoa retornado do banco de dados
@@ -32,18 +72,21 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
     }
 
     try {
+        let listaParticipantes = [];
         if (nomes.length === 0 && setor !== null) {
-            let participantes = await Pessoa.find({ setor: setor, _id { $ne: objReuniao.organizador} });
+            let participantes = await Pessoa.find({ setor: setor, _id: { $ne: objReuniao.organizador } });
             if (participantes.length === 0) {
                 console.log('Nenhum participante encontrado para o setor:', setor);
                 return;
             }
             participantes.forEach(async (participante) => {
+                listaParticipantes.push(participante.nome)
                 await adicionaParticipante(participante, novaReuniao);
             });
+
+            realizaValidacoes(consulta, [], [], novaReuniao, listaParticipantes);
         } else {
             let naoEncontrados = [];
-            let listaParticipantes = [];
             let qtdDuplicados = 0;
             for (const nome of nomes) {
                 let participanteDoc = await findWithJoinCascade({
@@ -75,50 +118,13 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
                     naoEncontrados.push(nome);
                 }
             };
-            if (naoEncontrados.length > 0) {
-                console.log(naoEncontrados)
-                let mensagemNaoEncontrados = `As seguintes pessoas não foram encontradas: ${naoEncontrados.join(', ')}.`;
-                console.log(mensagemNaoEncontrados);
-                
-                await axios(textMessage(consulta.numero, mensagemNaoEncontrados));
-                await axios(textMessage(consulta.numero, 'Verifique o(s) nome(s) ou consulte o administrador e tente novamente.'));
-            } else if (qtdDuplicados > 0) {
-                // Atualizar qtdDuplicados na reunião
-                novaReuniao.qtdDuplicados = qtdDuplicados;
-                await novaReuniao.save();
-                consulta.reuniao = novaReuniao._id;
-                consulta.etapaFluxo = 'PESSOA_DUPLICADA';
-                await consulta.save();
-            } else {
-                // Validar se todos os participantes possuem disponibilidade
-                const enviaSugestoes = async (haConflito, sugestoes) => {
-                    if (haConflito) {
-                        let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos no mesmo dia:`;
-                        let listaSugestoesHorarios = sugestoes.map(sugestao => {
-                            const horaInicio = format(sugestao.inicio, 'HH:mm', { locale: ptBR });
-                            const horaFim = format(sugestao.fim, 'HH:mm', { locale: ptBR });
-                            return {
-                                id: `${sugestao.inicio} - ${sugestao.fim}`,
-                                nome: `${horaInicio} - ${horaFim}`
-                            };
-                        });
-                        await axios(interactiveListMessage(consulta.numero, mensagemSugestoes, listaSugestoesHorarios, 'Sugestões de horário'));
-                    
-                        consulta.etapaFluxo = 'CONFLITO_HORARIO';
-                        consulta.reuniao = novaReuniao._id;
-                        await consulta.save();
-                    } else {
-                        mensagemConfirmacao(consulta, novaReuniao, listaParticipantes);
-                    }
-                }
 
-                await haConflitoHorario(consulta, novaReuniao._id, enviaSugestoes);
-            }
+            realizaValidacoes(consulta, naoEncontrados, qtdDuplicados, novaReuniao, listaParticipantes)
+
         }
 
         return res.status(200).json({ message: 'Reunião agendada com sucesso!' });
     } catch (error) {
-        console.log(error);
         return res.status(400).json({ error: error });
     }
 }
