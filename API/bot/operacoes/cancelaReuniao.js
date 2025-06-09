@@ -77,7 +77,7 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
             consulta.etapaFluxo = 'INICIAL';
             consulta.reuniao = null;
             await consulta.save();
-            await enviaNotificacaoReuniaoCancelada(reuniao_encontrada, 'usuario_cancelou_reuniao', 'pt_PT');
+            await enviaNotificacaoReuniaoCancelada(reuniao_encontrada, 'usuario_cancelou_reuniao');
             return true;
         }
     } catch (error) {
