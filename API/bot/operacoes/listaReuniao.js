@@ -43,7 +43,7 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                     dataHoraInicio: { $gte: new Date(resultado.dataHoraInicio), $lte: new Date(dataHoraFim) },
                     status: 'Agendada',
                     "organizador": consulta.pessoa._id
-                });
+                }).sort({ dataHoraInicio: 1 });
                 const mensagem = await formatarListaReunioes(reunioes_encontradas);
                 await axios(textMessage(numeroTel, mensagem));
                 consulta.etapaFluxo = 'INICIAL';
@@ -55,7 +55,7 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                 const reunioes_encontradas = await reuniao.find({
                     status: 'Agendada',
                     "organizador": consulta.pessoa._id
-                });
+                }).sort({ dataHoraInicio: 1 });
                 const mensagem = await formatarListaReunioes(reunioes_encontradas);
                 await axios(textMessage(numeroTel, mensagem));
                 consulta.etapaFluxo = 'INICIAL';
@@ -72,7 +72,7 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                     dataHoraInicio: { $gte: now },
                     status: 'Agendada',
                     "organizador": consulta.pessoa._id
-                })
+                }).sort({ dataHoraInicio: 1 });
                     if (reunioes_encontradas.length === 0) {
                         await axios(textMessage(numeroTel, "Você não possui reuniões agendadas."));
                         consulta.etapaFluxo = 'INICIAL';
@@ -97,7 +97,7 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                 dataHoraInicio: { $gte: now },
                 status: 'Agendada',
                 "organizador": consulta.pessoa._id
-            });
+            }).sort({ dataHoraInicio: 1 });
 
             if (reunioes_encontradas.length === 0) {
                 await axios(textMessage(numeroTel, "Você não possui reuniões agendadas."));
