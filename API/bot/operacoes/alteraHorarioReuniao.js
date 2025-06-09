@@ -108,7 +108,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
         const duracaoReuniao = dayjs.utc(reuniao_encontrada.dataHoraFim).diff(dayjs.utc(reuniao_encontrada.dataHoraInicio), 'minute');
 
         if (resultado.novoHorarioFim && resultado.novoHorarioFim.trim() !== '') {
-            dates.novoHorarioFim = new Date(validaConversaoUTC(resultado.novoHorarioFim));
+            dates.novoHorarioFim = new Date(converteParaHorarioUTC(resultado.novoHorarioFim));
         } else {
             dates.novoHorarioFim = new Date(dates.novoHorarioInicio.getTime() + duracaoReuniao * 60000); // Adiciona a duração da reunião ao novo horário de início
         }
