@@ -3,15 +3,11 @@ import telefones from '../../model/telefone.js';
 import axios from "axios";
 import { templateMessage } from '../../utll/requestBuilder.js';
 import { converteParaHorarioBrasilia } from '../../utll/data.js';
-<<<<<<< HEAD
-import dayjs from "dayjs";
-=======
 
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 dayjs.extend(utc);
 
->>>>>>> d1aa2cd3f0fa775d367f1b3b575f3232d24f3460
 /**
  * A função enviaNotificacaoReuniaoCancelada envia uma notificação de alteração de horário de reunião para os participantes.
  * 
@@ -47,15 +43,9 @@ async function enviaNotificacaoReuniaoCancelada(reuniao_encontrada, templateName
 
                     console.log(reuniao_encontrada.dataHoraInicio, reuniao_encontrada.dataHoraFim);
 
-<<<<<<< HEAD
-                    const dataHoraInicio = dayjs.utc(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
-                    const dataHoraFim = dayjs.utc(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
-                    
-=======
                     const dataHoraInicio = dayjs(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
                     const dataHoraFim = dayjs(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
 
->>>>>>> d1aa2cd3f0fa775d367f1b3b575f3232d24f3460
                     const template = {
                         nome: templateName,
                         parameters: [reuniao_encontrada.titulo, dataHoraInicio, dataHoraFim],
