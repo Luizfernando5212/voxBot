@@ -205,6 +205,10 @@ async function promptAlteracaoHorario(texto) {
         ],
         response_format: responseFormat,
     });
+    console.log(horarioBrasil);
+
+    console.log(texto);
+    
     let resultado = reuniao_alterada.choices[0].message.parsed;
 
     return resultado;
