@@ -81,17 +81,15 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto) {
  */
 async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
     try {
-        // let horarioBrasil = dayjs().tz("America/Sao_Paulo").toDate();
-        // horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
-
+        // let horarioBrasil = dayjs().tz("America/Sao_Paulo");
+        
         let horarioBrasil = agoraBrasilia();
-
+        
         let dates = {
             dataHoraInicio: converteParaHorarioUTC(resultado.dataHoraInicio),
             novoHorarioInicio: converteParaHorarioUTC(resultado.novoHorarioInicio),
             novoHorarioFim: converteParaHorarioUTC(resultado.novoHorarioFim)
-        }
-
+        }        
         const reuniao_encontrada = await reuniao.findOne({
             dataHoraInicio: {
                 $gte: dayjs(dates.dataHoraInicio).startOf('minute').toDate(),
@@ -100,8 +98,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
             status: 'Agendada',
             organizador: consulta.pessoa._id
         });
-
-
+    
         if (reuniao_encontrada === null) {
             await axios(textMessage(numeroTel, '❗Reunião não encontrada, verifique se informou corretamente a data/hora da reunião e qual período acontecerá (Manhã, Tarde ou Noite).'));
             return null;
