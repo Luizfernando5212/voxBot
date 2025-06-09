@@ -162,8 +162,8 @@ async function formatarListaReunioes(reunioes) {
     reunioes.forEach((r, i) => {
         const participantes = participantesPorReuniao[i];
 
-        const horarioInicio = dayjs.utc(r.dataHoraInicio).tz("America/Sao_Paulo").format("DD/MM/YYYY, [Inicia às] HH:mm");
-        const horarioFim = dayjs.utc(r.dataHoraFim).tz("America/Sao_Paulo").format("DD/MM/YYYY, [Finaliza às] HH:mm");
+        const horarioInicio = dayjs.utc(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm");
+        const horarioFim = dayjs.utc(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm");
 
         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
         mensagem += `   🕒 *Data:* ${horarioInicio}, ${horarioFim}\n`;
