@@ -90,13 +90,8 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
 
         } else {
             var now = moment.tz("America/Sao_Paulo");
-<<<<<<< HEAD
-            now.subtract(3, 'hours');
-            now = now.toDate();
-=======
                 now.subtract(3, 'hours');
                 now = now.toDate();
->>>>>>> d1aa2cd3f0fa775d367f1b3b575f3232d24f3460
 
             const reunioes_encontradas = await reuniao.find({
                 dataHoraInicio: { $gte: now },
