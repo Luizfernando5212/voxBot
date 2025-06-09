@@ -34,7 +34,7 @@ async function estruturaMensagemTexto(texto) {
     try {
         // Trocando o new Date() para o horário do Brasil, pois o date converte para UTC e isso causa conflito quando o horário é 21h da noite, pois joga para o dia seguinte.
         let horarioBrasil = dayjs().tz("America/Sao_Paulo").toDate();
-        // horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+        horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
         
         let responseFormat = zodResponseFormat(Evento, 'evento');
         const reuniao = await openai.beta.chat.completions.parse({
