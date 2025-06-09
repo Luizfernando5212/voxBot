@@ -73,6 +73,7 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
                 return true;
             }
 
+            throw new Error("test")
             reuniao_encontrada.status = 'Cancelada';
             await reuniao_encontrada.save()
             consulta.etapaFluxo = 'INICIAL';
@@ -101,13 +102,10 @@ async function promptCancelaReuniao(texto) {
     const reuniao_cancelada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            {
-                role: 'system', content: 'Extraia as informações do evento e verifique se o usuário quer cancelar uma reunião, não produza informações, hoje é dia ' + horarioBrasil +
-                    'Importante: "Considere que todas as referências de data e hora feitas pelo usuário estão no fuso horário de Brasília (GMT-3). Além de indicarem datas futuras"' +
-                    ' o usuário pode informar a dataHoraInicio da reunião que deseja cancelar, ou não informar nada.' +
-                    ' dataHoraInicio se refere a data e hora de início da reunião.' +
-                    ' indCancelamento diz se o usuário está querendo cancelar uma reunião.'
-            },
+            { role: 'system', content: 'Extraia as informações do evento e verifique se o usuário quer cancelar uma reunião, não produza informações, hoje é dia ' + horarioBrasil +
+                ' o usuário pode informar a dataHoraInicio da reunião que deseja cancelar, ou não informar nada.' +
+                ' dataHoraInicio se refere a data e hora de início da reunião.' +
+                ' indCancelamento diz se o usuário está querendo cancelar uma reunião.' },
             { role: 'user', content: texto },
         ],
         response_format: responseFormat,
