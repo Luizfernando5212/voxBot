@@ -29,6 +29,8 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
     try{
         if (!payloadVerificaReuniao) {
             let resultado = await promptListarReuniaso(texto);
+
+            console.log(resultado);
             
             if (!resultado.indListaReuniao && !resultado.indHistoricoReuniao) {
                 console.log("Não deseja verificar reuniões.");
