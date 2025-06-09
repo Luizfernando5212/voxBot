@@ -66,7 +66,8 @@ const realizaValidacoes = async (consulta, naoEncontrados = [], qtdDuplicados = 
 const agendaReuniao = async (consulta, objReuniao, res) => {
     objReuniao.organizador = consulta.pessoa._id;
     const novaReuniao = await Reuniao.create(objReuniao);
-
+    console.log(novaReuniao);
+    
     let nomes = objReuniao.participantes;
     const setor = objReuniao.setor;
     try {
