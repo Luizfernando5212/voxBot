@@ -67,7 +67,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
     objReuniao.organizador = consulta.pessoa._id;
     const novaReuniao = await Reuniao.create(objReuniao);
     console.log(novaReuniao);
-    
+
     let nomes = objReuniao.participantes;
     const setor = objReuniao.setor;
     try {
@@ -130,7 +130,7 @@ const agendaReuniao = async (consulta, objReuniao, res) => {
 
         }
 
-        return res.status(200).json({ message: 'Reunião agendada com sucesso!' });
+        return res.status(200).json({ message: 'Convite de reunião enviado com sucesso!' });
     } catch (error) {
         return res.status(400).json({ error: error });
     }

@@ -42,10 +42,10 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
                 participante.save();
                 consulta.save();
                 await reuniaoAtual.save();
-                const horaInicio = dayjs(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm [até] ');
+                const horaInicio = dayjs(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm');
                 const horaFim = dayjs(reuniaoAtual.dataHoraFim).format('HH:mm');
 
-                await axios(textMessage(numeroTel, `Reunião agendada com sucesso para ${horaInicio} ${horaFim}.`));
+                await axios(textMessage(numeroTel, `Convite de reunião enviado com sucesso! Proposta de reunião para: ${horaInicio} ${horaFim}.`));
                 mensagemConfirmacao(consulta, reuniaoAtual);
             } else if (resposta === 'CANCELAR') {
                 consulta.etapaFluxo = 'INICIAL';
@@ -55,8 +55,8 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
             }
             res.status(200).json({ message: 'Reunião confirmada ou cancelada com sucesso' });
         } else {
-            await axios(textMessage(numeroTel, 'Reunião já agendada ou cancelada.'));
-            return res.status(400).json({ error: 'Reunião já agendada ou cancelada' });
+            await axios(textMessage(numeroTel, 'Convite de reunião já enviado ou cancelada.'));
+            return res.status(400).json({ error: 'Convite de reunião já enviado ou cancelada.' });
         }
     } else {
         if (reuniaoAtual.status === 'Agendada') {
