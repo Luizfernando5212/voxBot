@@ -20,11 +20,11 @@ export function converteParaHorarioUTC(dataISO) {
     if (contemFuso) {
         // Se já contém fuso, parse como UTC diretamente
       console.log(`contem fuso ${dataISO}`);
-        dt = dayjs.utc(dataISO);
+        dt = dayjs.utc(dataISO).subtract(3, 'hour');
     } else {
         // Se não contém fuso, assume que é horário de Brasília (GMT-3) e soma 3h para UTC
       console.log(`Não contem fuso ${dataISO}`);
-        dt = dayjs.tz(dataISO, 'America/Sao_Paulo').utc();
+        dt = dayjs.utc(dataISO);
     }
 
     return dt.isValid() ? dt.toDate() : null;
