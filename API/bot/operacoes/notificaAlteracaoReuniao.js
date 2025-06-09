@@ -4,6 +4,10 @@ import axios from "axios";
 import { templateMessage } from '../../utll/requestBuilder.js';
 import { converteParaHorarioBrasilia } from '../../utll/data.js';
 
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+dayjs.extend(utc);
+
 /**
  * A função enviaNotificacaoReuniaoCancelada envia uma notificação de alteração de horário de reunião para os participantes.
  * 
