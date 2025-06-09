@@ -73,7 +73,6 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
                 return true;
             }
 
-            throw new Error("test")
             reuniao_encontrada.status = 'Cancelada';
             await reuniao_encontrada.save()
             consulta.etapaFluxo = 'INICIAL';
