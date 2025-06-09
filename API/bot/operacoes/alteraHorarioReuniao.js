@@ -92,6 +92,8 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
             novoHorarioFim: converteParaHorarioUTC(resultado.novoHorarioFim)
         }
 
+        console.log(dates);
+        
         const reuniao_encontrada = await reuniao.findOne({
             dataHoraInicio: {
                 $gte: dayjs(dates.dataHoraInicio).startOf('minute'),
