@@ -89,7 +89,8 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
             dataHoraInicio: converteParaHorarioUTC(resultado.dataHoraInicio),
             novoHorarioInicio: converteParaHorarioUTC(resultado.novoHorarioInicio),
             novoHorarioFim: converteParaHorarioUTC(resultado.novoHorarioFim)
-        }        
+        }
+        console.log(dates)
         const reuniao_encontrada = await reuniao.findOne({
             dataHoraInicio: {
                 $gte: dayjs(dates.dataHoraInicio).startOf('minute').toDate(),
@@ -134,20 +135,23 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
 
         reuniao_encontrada.dataHoraInicio = dates.novoHorarioInicio
 
-        if (dates.novoHorarioFim) {
+        // Só deve trocar o horário da reunião caso o usuário deixe em explicito
+        if (resultado.novoHorarioFim) {
+            console.log(dates.novoHorarioFim)
             reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
         }
 
-        if (dates.novoHorarioInicio.getTime() === reuniao_encontrada.dataHoraFim.getTime()) {
+        if (dates.novoHorarioInicio.getTime() < horarioBrasil.getTime()) {
+            await axios(textMessage(numeroTel, '❗Não é possível alterar o horário da reunião para o passado, por gentileza informe um novo horário para a reunião iniciar.'));
+            return null;
+        } else if (dates.novoHorarioInicio.getTime() === reuniao_encontrada.dataHoraFim.getTime()) {
             await axios(textMessage(numeroTel, '❗O horário de início não pode ser igual ao horário de fim da reunião. Por gentileza informe um horário de início e de fim para a reunião;'));
             return null;
         } else if (dates.novoHorarioInicio.getTime() > reuniao_encontrada.dataHoraFim.getTime()) {
             await axios(textMessage(numeroTel, '❗O horário de início é maior que o horário de fim da reunião, por gentileza informe um novo horário para a reunião finalizar.'));
             return null;
-        } else if (dates.novoHorarioInicio.getTime() < horarioBrasil.getTime()) {
-            await axios(textMessage(numeroTel, '❗Não é possível alterar o horário da reunião para o passado, por gentileza informe um novo horário para a reunião iniciar.'));
-            return null;
         }
+
         const validaExitenciaReuniao = await reuniao.find({
             $or: [
                 {
@@ -159,12 +163,12 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
             "organizador": consulta.pessoa._id,
             _id: { $ne: reuniao_encontrada._id }
         })
-
+        
         if (validaExitenciaReuniao.length > 0) {
             await axios(textMessage(numeroTel, '❗Conflito de horário, você já possui uma reunião agendada durante esse período.'));
             return null;
         }
-
+        
         return reuniao_encontrada;
     } catch (error) {
         console.error(`Erro ao atualizar o horário da reunião: ${error}`);
@@ -180,8 +184,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
  * @returns {Object} - Objeto com as informações extraídas do texto
  */
 async function promptAlteracaoHorario(texto) {
-    let horarioBrasil = dayjs().tz("America/Sao_Paulo").toDate();
-    // horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+    let horarioBrasil = agoraBrasilia()
 
     let responseFormat = zodResponseFormat(Evento, 'evento');
     const reuniao_alterada = await openai.beta.chat.completions.parse({
