@@ -39,8 +39,8 @@ async function enviaNotificacaoReuniaoCancelada(reuniao_encontrada, templateName
 
                     console.log(reuniao_encontrada.dataHoraInicio, reuniao_encontrada.dataHoraFim);
 
-                    const dataHoraInicio = converteParaHorarioBrasilia(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
-                    const dataHoraFim = converteParaHorarioBrasilia(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
+                    const dataHoraInicio = dayjs(reuniao_encontrada.dataHoraInicio).format('HH:mm [do dia] DD/MM/YYYY');
+                    const dataHoraFim = dayjs(reuniao_encontrada.dataHoraFim).format('HH:mm [do dia] DD/MM/YYYY');
 
                     const template = {
                         nome: templateName,
