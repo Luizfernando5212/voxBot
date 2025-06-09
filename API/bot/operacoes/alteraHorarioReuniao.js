@@ -85,7 +85,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
         // horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
 
         let horarioBrasil = agoraBrasilia();
-
+        console.log(resultado);
         let dates = {
             dataHoraInicio: converteParaHorarioUTC(resultado.dataHoraInicio),
             novoHorarioInicio: converteParaHorarioUTC(resultado.novoHorarioInicio),
