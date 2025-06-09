@@ -66,6 +66,11 @@ const mensagemConfirmacao = async (consulta, reuniao, listaParticipantes = []) =
         const data = dayjs(reuniao.dataHoraInicio).format('DD/MM/YYYY');
         const horaInicio = dayjs(reuniao.dataHoraInicio).format('HH:mm');
         const horaFim = dayjs(reuniao.dataHoraFim).format('HH:mm');
+        console.log('Números de telefone:', numeros);
+        console.log('Data:', data);
+        console.log('Hora de início:', horaInicio);
+        console.log('Hora de fim:', horaFim);
+        throw new Error("teste");
         const template = {
             nome: 'reuniao_marcado_envio',
             parameters: [organizador.nome, reuniao.titulo, data, horaInicio, horaFim]
