@@ -62,7 +62,7 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                 return true;
 
             } else {
-                var now = moment.tz("America/Sao_Paulo").toDate();
+                var now = moment.tz("America/Sao_Paulo");
                 now.subtract(3, 'hours');
                 now = now.toDate();
 
