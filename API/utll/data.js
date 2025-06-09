@@ -19,12 +19,21 @@ export function converteParaHorarioUTC(dataISO) {
     let dt;
     if (contemFuso) {
         // Se já contém fuso, parse como UTC diretamente
+<<<<<<< HEAD
         dt = dayjs.utc(dataISO);
         dt = dt.subtract(3, 'hour'); // Ajusta para UTC-3 (horário de Brasília)
     } else { 
         //[TODO]: Não precisa desse else, se não possui -03:00 já assume o horário do formato YYYY-MM-DDTHH:MM:SSZ
         // Se não contém fuso, assume que é horário de Brasília (GMT-3) e soma 3h para UTC
         dt = dayjs(dataISO);
+=======
+      console.log(`contem fuso ${dataISO}`);
+        dt = dayjs.utc(dataISO).subtract(3, 'hour');
+    } else {
+        // Se não contém fuso, assume que é horário de Brasília (GMT-3) e soma 3h para UTC
+      console.log(`Não contem fuso ${dataISO}`);
+        dt = dayjs.utc(dataISO);
+>>>>>>> d1aa2cd3f0fa775d367f1b3b575f3232d24f3460
     }
 
     return dt.isValid() ? dt.toDate() : null;

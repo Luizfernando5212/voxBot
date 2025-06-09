@@ -84,17 +84,19 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
         // let horarioBrasil = dayjs().tz("America/Sao_Paulo");
         
         let horarioBrasil = agoraBrasilia();
-        
+        console.log(resultado);
         let dates = {
             dataHoraInicio: converteParaHorarioUTC(resultado.dataHoraInicio),
             novoHorarioInicio: converteParaHorarioUTC(resultado.novoHorarioInicio),
             novoHorarioFim: converteParaHorarioUTC(resultado.novoHorarioFim)
         }
-        console.log(dates)
+
+        console.log(dates);
+        
         const reuniao_encontrada = await reuniao.findOne({
             dataHoraInicio: {
-                $gte: dayjs(dates.dataHoraInicio).startOf('minute').toDate(),
-                $lte: dayjs(dates.dataHoraInicio).endOf('minute').toDate()
+                $gte: dayjs(dates.dataHoraInicio).startOf('minute'),
+                $lte: dayjs(dates.dataHoraInicio).endOf('minute')
             },
             status: 'Agendada',
             organizador: consulta.pessoa._id
@@ -192,8 +194,7 @@ async function promptAlteracaoHorario(texto) {
         messages: [
             {
                 role: 'system', content: 'Extraia as informações do evento, identifique horários e verifique se o usuário deseja alterar o horário de uma reunião, você deve compreender linguagens como hoje, amanhã, semana que vem e outras variações. Não produza informações, ' +
-                    'hoje é dia ' + horarioBrasil + 
-                    // 'Importante: "Considere que todas as referências de data e hora feitas pelo usuário estão no fuso horário de Brasília (GMT-3)."' +
+                    'hoje é dia ' + horarioBrasil + '.'  +
                     ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada.' +
                     ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião.' +
                     ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião.' +
@@ -204,6 +205,10 @@ async function promptAlteracaoHorario(texto) {
         ],
         response_format: responseFormat,
     });
+    console.log(horarioBrasil);
+
+    console.log(texto);
+    
     let resultado = reuniao_alterada.choices[0].message.parsed;
 
     return resultado;
