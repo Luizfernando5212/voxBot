@@ -94,8 +94,8 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
 
         const reuniao_encontrada = await reuniao.findOne({
             dataHoraInicio: {
-                $gte: dayjs(dates.dataHoraInicio).startOf('minute').toDate(),
-                $lte: dayjs(dates.dataHoraInicio).endOf('minute').toDate()
+                $gte: dayjs(dates.dataHoraInicio).startOf('minute'),
+                $lte: dayjs(dates.dataHoraInicio).endOf('minute')
             },
             status: 'Agendada',
             organizador: consulta.pessoa._id
