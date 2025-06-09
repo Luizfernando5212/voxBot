@@ -194,7 +194,7 @@ async function promptAlteracaoHorario(texto) {
         messages: [
             {
                 role: 'system', content: 'Extraia as informações do evento, identifique horários e verifique se o usuário deseja alterar o horário de uma reunião, você deve compreender linguagens como hoje, amanhã, semana que vem e outras variações. Não produza informações, ' +
-                    'hoje é dia ' + horarioBrasil + 'Importante: "Considere que todas as referências de data e hora feitas pelo usuário estão no fuso horário de Brasília (GMT-3)."' +
+                    'hoje é dia ' + horarioBrasil + '.'  +
                     ' dataHoraInicio, é uma informação obrigatória, pois se refere ao horário da reunião que está sendo buscada.' +
                     ' novoHorarioInicio é uma informação obrigatório, pois se refere ao novo horário de início para a reunião.' +
                     ' novoHorarioFim é uma informação opcional, se refere ao novo horário de fim para a reunião.' +
