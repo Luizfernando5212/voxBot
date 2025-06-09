@@ -102,7 +102,6 @@ async function promptCancelaReuniao(texto) {
         messages: [
             {
                 role: 'system', content: 'Extraia as informações do evento e verifique se o usuário quer cancelar uma reunião, não produza informações, hoje é dia ' + horarioBrasil +
-                    'Importante: "Considere que todas as referências de data e hora feitas pelo usuário estão no fuso horário de Brasília (GMT-3). Além de indicarem datas futuras"' +
                     ' o usuário pode informar a dataHoraInicio da reunião que deseja cancelar, ou não informar nada.' +
                     ' dataHoraInicio se refere a data e hora de início da reunião.' +
                     ' indCancelamento diz se o usuário está querendo cancelar uma reunião.'
