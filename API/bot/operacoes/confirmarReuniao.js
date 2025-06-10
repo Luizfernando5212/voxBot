@@ -45,7 +45,7 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
                 const horaInicio = dayjs(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm');
                 const horaFim = dayjs(reuniaoAtual.dataHoraFim).format('HH:mm');
 
-                await axios(textMessage(numeroTel, `Convite de reunião enviado com sucesso! Proposta de reunião para: ${horaInicio} ${horaFim}.`));
+                await axios(textMessage(numeroTel, `Convite de reunião enviado com sucesso! Proposta de reunião para: ${horaInicio} às ${horaFim}.`));
                 mensagemConfirmacao(consulta, reuniaoAtual);
             } else if (resposta === 'CANCELAR') {
                 consulta.etapaFluxo = 'INICIAL';
