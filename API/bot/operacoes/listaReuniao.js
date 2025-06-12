@@ -108,7 +108,9 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                 dataHoraInicio: { $gte: now },
                 status: 'Agendada',
                 "organizador": consulta.pessoa._id
-            }).sort({ dataHoraInicio: 1 });
+            })
+            .populate('organizador', 'nome')
+            .sort({ dataHoraInicio: 1 });
 
             if (reunioes_encontradas.length === 0) {
                 await axios(textMessage(numeroTel, "Você não possui reuniões agendadas."));
