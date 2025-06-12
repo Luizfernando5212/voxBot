@@ -33,7 +33,7 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
     // const { dataHoraInicio: inicioRaw, dataHoraFim: fimRaw } = reuniao.toObject();
 
     // const duracaoReuniao = new Date(fim) - new Date(inicio); // Duração da reunião em milissegundos
-    const { dataHoraInicio: inicioRaw, dataHoraFim: fimRaw } = reuniao.toObject();
+    const { dataHoraInicio: inicioRaw, dataHoraFim: fimRaw } = reuniao;
 
     const inicio = dayjs(inicioRaw);
     const fim = dayjs(fimRaw);
