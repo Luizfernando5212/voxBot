@@ -38,8 +38,8 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
     const inicio = dayjs.utc(inicioRaw);
     const fim = dayjs.utc(fimRaw);
 
-    console.log('Inicio:', inicio.format());
-    console.log('Fim:', fim.format());
+    console.log('Inicio:', inicio);
+    console.log('Fim:', fim);
 
     const duracaoReuniao = fim.diff(inicio);
 
