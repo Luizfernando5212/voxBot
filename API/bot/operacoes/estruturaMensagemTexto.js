@@ -61,6 +61,7 @@ async function estruturaMensagemTexto(texto) {
                         return 'A data e hora de início da reunião não pode ser no passado. Por favor, informe uma data e hora futura.';
                     }
                     resultado.setor = null;
+                    console.log(resultado);
                     return resultado;
                 } else {
                     // Trecho ficará responsável por buscar o setor no banco de dados
@@ -71,6 +72,7 @@ async function estruturaMensagemTexto(texto) {
                     }
                     const setor = await Setor.find({ descricao: resultado.setor });
                     resultado.setor = setor[0]._id;
+                    console.log(resultado)
                     return resultado;
                 }
             } else {
