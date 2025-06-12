@@ -33,14 +33,6 @@ const realizaValidacoes = async (consulta, naoEncontrados = [], qtdDuplicados = 
                     await consulta.save();
                 } else {
                     let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos no mesmo dia:`;
-                    // let listaSugestoesHorarios = sugestoes.map(sugestao => {
-                    //     const horaInicio = format(sugestao.inicio, 'HH:mm', { locale: ptBR });
-                    //     const horaFim = format(sugestao.fim, 'HH:mm', { locale: ptBR });
-                    //     return {
-                    //         id: `${sugestao.inicio} - ${sugestao.fim}`,
-                    //         nome: `${horaInicio} - ${horaFim}`
-                    //     };
-                    // });
 
                     const listaSugestoesHorarios = sugestoes.map(sugestao => {
                         const horaInicio = sugestao.inicio.format('HH:mm');

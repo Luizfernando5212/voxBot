@@ -29,8 +29,20 @@ async function isFeriado(date, empresaId) {
 async function haConflitoHorario(consulta, idReuniao, callback) {
 
     const reuniao = await Reuniao.findById(idReuniao);
-    const { dataHoraInicio: inicio, dataHoraFim: fim } = reuniao.toObject();
-    const duracaoReuniao = new Date(fim) - new Date(inicio); // Duração da reunião em milissegundos
+    // const { dataHoraInicio: inicio, dataHoraFim: fim } = reuniao.toObject();
+    // const { dataHoraInicio: inicioRaw, dataHoraFim: fimRaw } = reuniao.toObject();
+
+    // const duracaoReuniao = new Date(fim) - new Date(inicio); // Duração da reunião em milissegundos
+    const { dataHoraInicio: inicioRaw, dataHoraFim: fimRaw } = reuniao.toObject();
+
+    const inicio = dayjs.utc(inicioRaw);
+    const fim = dayjs.utc(fimRaw);
+
+    console.log('Inicio:', inicio.format());
+    console.log('Fim:', fim.format());
+
+    const duracaoReuniao = fim.diff(inicio);
+
 
     const ehFeriado = await isFeriado(inicio, consulta.pessoa.setor.empresa._id);
     if (ehFeriado) {
@@ -45,33 +57,56 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
         fim: consulta.pessoa.setor.empresa.fimExpediente,
     }
 
-    let expedienteInicio = new Date(inicio);
-    expedienteInicio.setHours(0, 0, 0, 0); // Define o horário de início do expediente para 00:00:00.000
-    let expedienteFim = new Date(fim);
-    expedienteFim.setHours(23, 59, 59, 999);
+    // let expedienteInicio = new Date(inicio);
+    // expedienteInicio.setHours(0, 0, 0, 0); // Define o horário de início do expediente para 00:00:00.000
+    // let expedienteFim = new Date(fim);
+    // expedienteFim.setHours(23, 59, 59, 999);
 
-    let reunioesAgendadas = await obterReunioesAgendadas(idsParticipantes, expedienteInicio, expedienteFim);
+    let expedienteInicio = inicio.startOf('day');
+    let expedienteFim = fim.endOf('day');
+
+    let reunioesAgendadas = await obterReunioesAgendadas(idsParticipantes, expedienteInicio.toDate(), expedienteFim.toDate());
 
     if (reunioesAgendadas.length > 0) {
-        if (expediente.inicio && expediente.fim) {
-            const [horaInicio, minutoInicio] = expediente.inicio.split(":");
-            expedienteInicio = new Date(inicio);
-            expedienteInicio.setHours(parseInt(horaInicio), parseInt(minutoInicio), 0, 0);
+        // if (expediente.inicio && expediente.fim) {
+        //     const [horaInicio, minutoInicio] = expediente.inicio.split(":");
+        //     expedienteInicio = new Date(inicio);
+        //     expedienteInicio.setHours(parseInt(horaInicio), parseInt(minutoInicio), 0, 0);
 
-            const [horaFim, minutoFim] = expediente.fim.split(":");
-            expedienteFim = new Date(fim);
-            expedienteFim.setHours(parseInt(horaFim), parseInt(minutoFim), 0, 0);
+        //     const [horaFim, minutoFim] = expediente.fim.split(":");
+        //     expedienteFim = new Date(fim);
+        //     expedienteFim.setHours(parseInt(horaFim), parseInt(minutoFim), 0, 0);
+        // }
+
+        if (expediente.inicio && expediente.fim) {
+            const [horaInicio, minutoInicio] = expediente.inicio.split(":").map(Number);
+            expedienteInicio = inicio.set('hour', horaInicio).set('minute', minutoInicio).set('second', 0).set('millisecond', 0);
+
+            const [horaFim, minutoFim] = expediente.fim.split(":").map(Number);
+            expedienteFim = fim.set('hour', horaFim).set('minute', minutoFim).set('second', 0).set('millisecond', 0);
         }
 
         reunioesAgendadas = reunioesAgendadas.map((reuniao) => {
             return formatarReuniao(reuniao);
         });
 
-        const haConflito = reunioesAgendadas.some((r) => {
+        // const haConflito = reunioesAgendadas.some((r) => {
+        //     return (
+        //         (inicio >= r.dataHoraInicio && inicio < r.dataHoraFim) ||
+        //         (fim > r.dataHoraInicio && fim <= r.dataHoraFim) ||
+        //         (inicio <= r.dataHoraInicio && fim >= r.dataHoraFim)
+        //     );
+        // });
+
+
+        const haConflito = reunioesAgendadas.some(r => {
+            const inicioReuniao = dayjs.utc(r.dataHoraInicio);
+            const fimReuniao = dayjs.utc(r.dataHoraFim);
+
             return (
-                (inicio >= r.dataHoraInicio && inicio < r.dataHoraFim) ||
-                (fim > r.dataHoraInicio && fim <= r.dataHoraFim) ||
-                (inicio <= r.dataHoraInicio && fim >= r.dataHoraFim)
+                (inicio.isSame(inicioReuniao) || inicio.isAfter(inicioReuniao)) && inicio.isBefore(fimReuniao) ||
+                fim.isAfter(inicioReuniao) && (fim.isSame(fimReuniao) || fim.isBefore(fimReuniao)) ||
+                inicio.isBefore(inicioReuniao) && fim.isAfter(fimReuniao)
             );
         });
 
@@ -90,19 +125,27 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
 
 }
 
-function formatarReuniao(reuniao) {
-    if (reuniao.dataHoraInicio) {
-        reuniao.dataHoraInicio = format(new Date(reuniao.dataHoraInicio), 'yyyy-MM-dd HH:mm:ssXXX', {
-            timeZone: 'America/Sao_Paulo'
-        });
-    }
-    if (reuniao.dataHoraFim) {
-        reuniao.dataHoraFim = format(new Date(reuniao.dataHoraFim), 'yyyy-MM-dd HH:mm:ssXXX', {
-            timeZone: 'America/Sao_Paulo'
-        });
-    }
+// function formatarReuniao(reuniao) {
+//     if (reuniao.dataHoraInicio) {
+//         reuniao.dataHoraInicio = format(new Date(reuniao.dataHoraInicio), 'yyyy-MM-dd HH:mm:ssXXX', {
+//             timeZone: 'America/Sao_Paulo'
+//         });
+//     }
+//     if (reuniao.dataHoraFim) {
+//         reuniao.dataHoraFim = format(new Date(reuniao.dataHoraFim), 'yyyy-MM-dd HH:mm:ssXXX', {
+//             timeZone: 'America/Sao_Paulo'
+//         });
+//     }
 
-    return reuniao;
+//     return reuniao;
+// }
+
+function formatarReuniao(reuniao) {
+    return {
+        ...reuniao,
+        dataHoraInicio: dayjs.utc(reuniao.dataHoraInicio),
+        dataHoraFim: dayjs.utc(reuniao.dataHoraFim),
+    };
 }
 
 function formatarData(data) {
@@ -134,32 +177,58 @@ async function obterReunioesAgendadas(idsParticipantes, inicio, fim) {
     return reunioesAgendadas;
 }
 
+// function calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioes) {
+//     const reunioesOrdenadas = [...reunioes].sort((a, b) =>
+//         new Date(a.dataHoraInicio) - new Date(b.dataHoraInicio)
+//     );
+
+//     const livres = [];
+//     let inicioLivre = new Date(expedienteInicio);
+
+//     for (const reuniao of reunioesOrdenadas) {
+//         const inicioReuniao = new Date(reuniao.dataHoraInicio);
+//         const fimReuniao = new Date(reuniao.dataHoraFim);
+
+//         if (inicioReuniao > inicioLivre) {
+//             // Espaço livre entre o último fim e o próximo início
+//             livres.push({ inicio: new Date(inicioLivre), fim: new Date(inicioReuniao) });
+//         }
+
+//         // Atualiza o próximo início livre
+//         if (fimReuniao > inicioLivre) {
+//             inicioLivre = new Date(fimReuniao);
+//         }
+//     }
+//     // Depois da última reunião, até o final do expediente
+//     if (inicioLivre < expedienteFim) {
+//         livres.push({ inicio: new Date(inicioLivre), fim: new Date(expedienteFim) });
+//     }
+//     return livres;
+// }
+
 function calcularIntervalosLivres(expedienteInicio, expedienteFim, reunioes) {
-    const reunioesOrdenadas = [...reunioes].sort((a, b) =>
-        new Date(a.dataHoraInicio) - new Date(b.dataHoraInicio)
-    );
+    const reunioesOrdenadas = [...reunioes].sort((a, b) => a.dataHoraInicio.diff(b.dataHoraInicio));
 
     const livres = [];
-    let inicioLivre = new Date(expedienteInicio);
+    let inicioLivre = expedienteInicio;
 
     for (const reuniao of reunioesOrdenadas) {
-        const inicioReuniao = new Date(reuniao.dataHoraInicio);
-        const fimReuniao = new Date(reuniao.dataHoraFim);
+        const inicioReuniao = reuniao.dataHoraInicio;
+        const fimReuniao = reuniao.dataHoraFim;
 
-        if (inicioReuniao > inicioLivre) {
-            // Espaço livre entre o último fim e o próximo início
-            livres.push({ inicio: new Date(inicioLivre), fim: new Date(inicioReuniao) });
+        if (inicioReuniao.isAfter(inicioLivre)) {
+            livres.push({ inicio: inicioLivre, fim: inicioReuniao });
         }
 
-        // Atualiza o próximo início livre
-        if (fimReuniao > inicioLivre) {
-            inicioLivre = new Date(fimReuniao);
+        if (fimReuniao.isAfter(inicioLivre)) {
+            inicioLivre = fimReuniao;
         }
     }
-    // Depois da última reunião, até o final do expediente
-    if (inicioLivre < expedienteFim) {
-        livres.push({ inicio: new Date(inicioLivre), fim: new Date(expedienteFim) });
+
+    if (inicioLivre.isBefore(expedienteFim)) {
+        livres.push({ inicio: inicioLivre, fim: expedienteFim });
     }
+
     return livres;
 }
 
@@ -167,12 +236,11 @@ function horariosAlternativos(intervalosLivres, duracaoReuniao, maxSugestoes = 5
     const sugestoes = [];
 
     for (const intervalo of intervalosLivres) {
-        let inicioSugestao = dayjs(intervalo.inicio);
+        let inicioSugestao = intervalo.inicio;
 
         while (inicioSugestao.valueOf() + duracaoReuniao <= dayjs(intervalo.fim).valueOf()) {
+            console.log('duracaoReuniao', duracaoReuniao);
             const fimSugestao = inicioSugestao.add(duracaoReuniao, 'millisecond');
-
-            // sugestoes.push({ inicio: dayjs(inicioSugestao).format('YYYY-MM-DD HH:mm:ssZ'), fim: dayjs(fimSugestao).format('YYYY-MM-DD HH:mm:ssZ') });
 
             sugestoes.push({
                 inicio: inicioSugestao, // mantém como dayjs para reutilizar depois
@@ -182,6 +250,7 @@ function horariosAlternativos(intervalosLivres, duracaoReuniao, maxSugestoes = 5
             if (sugestoes.length >= maxSugestoes) {
                 return sugestoes;
             }
+            console.log(`Sugestão de horário: ${inicioSugestao.format('DD/MM/YYYY HH:mm')} - ${fimSugestao.format('DD/MM/YYYY HH:mm')}`);
             // Avança para próxima sugestão em 30 min
             inicioSugestao = inicioSugestao.add(30, 'minute');
         }
