@@ -55,7 +55,7 @@ async function cancelaReuniao(consulta, numeroTel, texto) {
             }
             return true;
         } else {
-            const dataHoraInicio = converteParaHorarioUTC(resultado.dataHoraInicio);
+            const dataHoraInicio = dayjs(resultado.dataHoraInicio);
 
             console.log('dataHoraInicio', dataHoraInicio);
             console.log('resultado', resultado);
