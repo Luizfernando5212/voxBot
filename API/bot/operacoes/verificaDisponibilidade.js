@@ -6,6 +6,12 @@ import { format } from 'date-fns-tz';
 import { startOfDay, endOfDay } from 'date-fns';
 import { converteParaHorarioBrasilia } from '../../utll/data.js';
 
+
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+dayjs.extend(utc);
+
+
 async function isFeriado(date, empresaId) {
     const data = converteParaHorarioBrasilia(date);
     const inicioDia = startOfDay(data);
@@ -161,18 +167,23 @@ function horariosAlternativos(intervalosLivres, duracaoReuniao, maxSugestoes = 5
     const sugestoes = [];
 
     for (const intervalo of intervalosLivres) {
-        let inicioSugestao = new Date(intervalo.inicio);
+        let inicioSugestao = dayjs(intervalo.inicio);
 
-        while (inicioSugestao.getTime() + duracaoReuniao <= intervalo.fim.getTime()) {
-            const fimSugestao = new Date(inicioSugestao.getTime() + duracaoReuniao);
+        while (inicioSugestao.valueOf() + duracaoReuniao <= dayjs(intervalo.fim).valueOf()) {
+            const fimSugestao = inicioSugestao.add(duracaoReuniao, 'millisecond');
 
-            sugestoes.push({ inicio: formatarData(new Date(inicioSugestao)), fim: formatarData(fimSugestao) });
+            // sugestoes.push({ inicio: dayjs(inicioSugestao).format('YYYY-MM-DD HH:mm:ssZ'), fim: dayjs(fimSugestao).format('YYYY-MM-DD HH:mm:ssZ') });
+
+            sugestoes.push({
+                inicio: inicioSugestao, // mantém como dayjs para reutilizar depois
+                fim: fimSugestao
+            });
 
             if (sugestoes.length >= maxSugestoes) {
                 return sugestoes;
             }
             // Avança para próxima sugestão em 30 min
-            inicioSugestao = new Date(inicioSugestao.getTime() + 30 * 60 * 1000);
+            inicioSugestao = inicioSugestao.add(30, 'minute');
         }
     }
     return sugestoes;

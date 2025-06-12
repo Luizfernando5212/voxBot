@@ -32,20 +32,31 @@ const realizaValidacoes = async (consulta, naoEncontrados = [], qtdDuplicados = 
                     consulta.etapaFluxo = 'INICIAL';
                     await consulta.save();
                 } else {
-                let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos no mesmo dia:`;
-                let listaSugestoesHorarios = sugestoes.map(sugestao => {
-                    const horaInicio = format(sugestao.inicio, 'HH:mm', { locale: ptBR });
-                    const horaFim = format(sugestao.fim, 'HH:mm', { locale: ptBR });
-                    return {
-                        id: `${sugestao.inicio} - ${sugestao.fim}`,
-                        nome: `${horaInicio} - ${horaFim}`
-                    };
-                });
-                await axios(interactiveListMessage(consulta.numero, mensagemSugestoes, listaSugestoesHorarios, 'Sugestões de horário'));
-                
-                consulta.etapaFluxo = 'CONFLITO_HORARIO';
-                consulta.reuniao = novaReuniao._id;
-                await consulta.save();
+                    let mensagemSugestoes = `A reunião está em conflito com outros compromissos. Aqui estão algumas sugestões de horários alternativos no mesmo dia:`;
+                    // let listaSugestoesHorarios = sugestoes.map(sugestao => {
+                    //     const horaInicio = format(sugestao.inicio, 'HH:mm', { locale: ptBR });
+                    //     const horaFim = format(sugestao.fim, 'HH:mm', { locale: ptBR });
+                    //     return {
+                    //         id: `${sugestao.inicio} - ${sugestao.fim}`,
+                    //         nome: `${horaInicio} - ${horaFim}`
+                    //     };
+                    // });
+
+                    const listaSugestoesHorarios = sugestoes.map(sugestao => {
+                        const horaInicio = sugestao.inicio.format('HH:mm');
+                        const horaFim = sugestao.fim.format('HH:mm');
+
+                        console.log(`Sugestão de horário: ${horaInicio} - ${horaFim}`);
+                        return {
+                            id: `${sugestao.inicio.toISOString()} - ${sugestao.fim.toISOString()}`,
+                            nome: `${horaInicio} - ${horaFim}`
+                        };
+                    });
+                    await axios(interactiveListMessage(consulta.numero, mensagemSugestoes, listaSugestoesHorarios, 'Sugestões de horário'));
+
+                    consulta.etapaFluxo = 'CONFLITO_HORARIO';
+                    consulta.reuniao = novaReuniao._id;
+                    await consulta.save();
                 }
             } else {
                 mensagemConfirmacao(consulta, novaReuniao, listaParticipantes);
