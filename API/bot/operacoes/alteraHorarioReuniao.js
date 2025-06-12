@@ -90,9 +90,9 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
         console.log('horario Brasil', horarioBrasil);
         console.log(resultado);
         let dates = {
-            dataHoraInicio: dayjs(resultado.dataHoraInicio),
-            novoHorarioInicio: dayjs(resultado.novoHorarioInicio),
-            novoHorarioFim: dayjs(resultado.novoHorarioFim)
+            dataHoraInicio: dayjs(resultado.dataHoraInicio).toDate(),
+            novoHorarioInicio: dayjs(resultado.novoHorarioInicio).toDate(),
+            novoHorarioFim: dayjs(resultado.novoHorarioFim).toDate(),
         }
 
         console.log(dates);
