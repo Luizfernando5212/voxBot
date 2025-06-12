@@ -7,6 +7,8 @@ import { startOfDay, endOfDay } from 'date-fns';
 import { converteParaHorarioBrasilia } from '../../utll/data.js';
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
