@@ -112,7 +112,7 @@ async function obterReunioesAgendadas(idsParticipantes, inicio, fim) {
         ],
         conditions: [
             { pessoa: { $in: idsParticipantes } },
-            { 'reuniao.dataHoraInicio': { $gte: inicio, $lt: fim } },
+            { 'reuniao.dataHoraInicio': { $gt: inicio, $lt: fim } },
             { 'reuniao.status': 'Agendada' },
         ],
         convertDates: ['reuniao.dataHoraInicio', 'reuniao.dataHoraFim'],
