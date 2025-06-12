@@ -56,13 +56,13 @@ conn().then(()=> {
     app.listen(PORT, () => {
         console.log('listening for requests: ' + PORT)
     })
-    // cron.schedule('*/5 * * * *', async() => {
-    //     try {
-    //         envioLembrete();
-    //     } catch(error){
-    //         console.log("Erro ao executar o cron", error)
-    //     }
-    // });
+    cron.schedule('*/5 * * * *', async() => {
+        try {
+            envioLembrete();
+        } catch(error){
+            console.log("Erro ao executar o cron", error)
+        }
+    });
 })
 
 
