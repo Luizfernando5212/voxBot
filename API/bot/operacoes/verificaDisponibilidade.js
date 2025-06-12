@@ -86,14 +86,10 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
 
 function formatarReuniao(reuniao) {
     if (reuniao.dataHoraInicio) {
-        reuniao.dataHoraInicio = format(new Date(reuniao.dataHoraInicio), 'yyyy-MM-dd HH:mm:ssXXX', {
-            timeZone: 'America/Sao_Paulo'
-        });
+        reuniao.dataHoraInicio = dyjs(reuniao.dataHoraInicio);
     }
     if (reuniao.dataHoraFim) {
-        reuniao.dataHoraFim = format(new Date(reuniao.dataHoraFim), 'yyyy-MM-dd HH:mm:ssXXX', {
-            timeZone: 'America/Sao_Paulo'
-        });
+        reuniao.dataHoraFim = dayjs(reuniao.dataHoraFim)
     }
 
     return reuniao;

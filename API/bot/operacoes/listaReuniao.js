@@ -182,7 +182,7 @@ async function formatarListaReunioes(reunioes) {
         console.log(r);
         const participantes = participantesPorReuniao[i];
         const horarioInicio = dayjs(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm");
-        const horarioFim = dayjs(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm");
+        const horarioFim = dayjs(r.dataHoraFim).format(", [Finaliza às] HH:mm");
 
         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
         mensagem += `   🕒 *Data:* ${horarioInicio}, ${horarioFim}\n`;
