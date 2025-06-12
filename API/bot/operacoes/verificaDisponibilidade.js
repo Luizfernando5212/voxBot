@@ -5,6 +5,10 @@ import findWithJoinCascade from '../../utll/mongoQuery.js';
 import { format } from 'date-fns-tz';
 import { startOfDay, endOfDay } from 'date-fns';
 import { converteParaHorarioBrasilia } from '../../utll/data.js';
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 async function isFeriado(date, empresaId) {
     const data = converteParaHorarioBrasilia(date);
@@ -86,7 +90,7 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
 
 function formatarReuniao(reuniao) {
     if (reuniao.dataHoraInicio) {
-        reuniao.dataHoraInicio = dyjs(reuniao.dataHoraInicio);
+        reuniao.dataHoraInicio = dayjs(reuniao.dataHoraInicio);
     }
     if (reuniao.dataHoraFim) {
         reuniao.dataHoraFim = dayjs(reuniao.dataHoraFim)
