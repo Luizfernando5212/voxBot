@@ -42,8 +42,8 @@ const confirmarReuniao = async (consulta, numeroTel, mensagem, res) => {
                 participante.save();
                 consulta.save();
                 await reuniaoAtual.save();
-                const horaInicio = converteParaHorarioBrasilia(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm [até]');
-                const horaFim = converteParaHorarioBrasilia(reuniaoAtual.dataHoraFim).format('HH:mm');
+                const horaInicio = dayjs(reuniaoAtual.dataHoraInicio).format('DD/MM/YYYY HH:mm [até]');
+                const horaFim = dayjs(reuniaoAtual.dataHoraFim).format('HH:mm');
 
                 console.log(`Reunião confirmada: ${horaInicio} ${horaFim}`);
                 await axios(textMessage(numeroTel, `Convite de reunião enviado com sucesso para ${horaInicio} ${horaFim}.`));
