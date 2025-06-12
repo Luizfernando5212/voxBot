@@ -181,8 +181,8 @@ async function formatarListaReunioes(reunioes) {
         r.toObject(); // Converte o documento para objeto JavaScript convertendo as datas para o formato correto
         console.log(r);
         const participantes = participantesPorReuniao[i];
-        const horarioInicio = converteParaHorarioBrasilia(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm");
-        const horarioFim = converteParaHorarioBrasilia(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm");
+        const horarioInicio = dayjs(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm");
+        const horarioFim = dayjs(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm");
 
         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
         mensagem += `   🕒 *Data:* ${horarioInicio}, ${horarioFim}\n`;
