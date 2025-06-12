@@ -58,6 +58,8 @@ async function alteraHorarioReuniao(consulta, numeroTel, texto) {
                 consulta.etapaFluxo = 'INICIAL';
                 consulta.reuniao = null;
                 await reuniao_encontrada.save()
+
+                console.log('depois de salvar', reuniao_encontrada);
                 await consulta.save();
                 await enviaNotificacaoAlteracaoHorario(reuniao_encontrada, 'usuario_alterou_horario_reuniao');
                 return true;
@@ -85,6 +87,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
         // horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
 
         let horarioBrasil = agoraBrasilia();
+        console.log('horario Brasil', horarioBrasil);
         console.log(resultado);
         let dates = {
             dataHoraInicio: converteParaHorarioUTC(resultado.dataHoraInicio),
@@ -143,7 +146,7 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
             reuniao_encontrada.dataHoraFim = dates.novoHorarioFim
         }
 
-        console.log(reuniao_encontrada);
+        console.log('antes de salvar ', reuniao_encontrada);
 
         if (dates.novoHorarioInicio.getTime() === reuniao_encontrada.dataHoraFim.getTime()) {
             await axios(textMessage(numeroTel, '❗O horário de início não pode ser igual ao horário de fim da reunião. Por gentileza informe um horário de início e de fim para a reunião;'));

@@ -59,7 +59,7 @@ export default {
             return res.status(200).json(reuniao);
         }
         catch (err) {
-            return res.status(400).json({ error: 'Error updating Reuniao' });
+            return res.status(400).json({ error: 'Error updating Reuniao ', err });
         }
     },
     async delete(req, res) {

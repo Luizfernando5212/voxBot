@@ -11,6 +11,9 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import participantes from "../../model/participantes.js";
+import { agoraBrasilia } from "../../utll/data.js";
+
+import { converteParaHorarioBrasilia } from '../../utll/data.js';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -39,11 +42,19 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
 
             if (resultado.dataHoraInicio !== '') {
                 let dataHoraFim = dayjs.utc(resultado.dataHoraInicio).set('hour', 23).set('minute', 59).set('second', 59).toISOString();
+                
+                const reunioesParticipadas = await Participantes.find({
+                pessoa: consulta.pessoa._id,
+                conviteAceito: true // opcional, se quiser filtrar apenas quem confirmou presença
+                }).distinct('_id');
+                
                 const reunioes_encontradas = await reuniao.find({
+                    _id: { $in: reunioesParticipadas },
                     dataHoraInicio: { $gte: new Date(resultado.dataHoraInicio), $lte: new Date(dataHoraFim) },
                     status: 'Agendada',
-                    "organizador": consulta.pessoa._id
-                }).sort({ dataHoraInicio: 1 });
+                })
+                .populate('organizador', 'nome')
+                .sort({ dataHoraInicio: 1 });
                 const mensagem = await formatarListaReunioes(reunioes_encontradas);
                 await axios(textMessage(numeroTel, mensagem));
                 consulta.etapaFluxo = 'INICIAL';
@@ -55,7 +66,9 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                 const reunioes_encontradas = await reuniao.find({
                     status: 'Agendada',
                     "organizador": consulta.pessoa._id
-                }).sort({ dataHoraInicio: 1 });
+                })
+                .populate('organizador', 'nome')
+                .sort({ dataHoraInicio: 1 });
                 const mensagem = await formatarListaReunioes(reunioes_encontradas);
                 await axios(textMessage(numeroTel, mensagem));
                 consulta.etapaFluxo = 'INICIAL';
@@ -64,15 +77,15 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
                 return true;
 
             } else {
-                var now = moment.tz("America/Sao_Paulo");
-                now.subtract(3, 'hours');
-                now = now.toDate();
+                var now = agoraBrasilia();
 
                 const reunioes_encontradas = await reuniao.find({
                     dataHoraInicio: { $gte: now },
                     status: 'Agendada',
                     "organizador": consulta.pessoa._id
-                }).sort({ dataHoraInicio: 1 });
+                })
+                .populate('organizador', 'nome')
+                .sort({ dataHoraInicio: 1 });
                     if (reunioes_encontradas.length === 0) {
                         await axios(textMessage(numeroTel, "Você não possui reuniões agendadas."));
                         consulta.etapaFluxo = 'INICIAL';
@@ -89,9 +102,7 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
             }
 
         } else {
-            var now = moment.tz("America/Sao_Paulo");
-                now.subtract(3, 'hours');
-                now = now.toDate();
+            var now = agoraBrasilia();
 
             const reunioes_encontradas = await reuniao.find({
                 dataHoraInicio: { $gte: now },
@@ -148,6 +159,7 @@ async function formatarListaReunioes(reunioes) {
         return "Você não possui reuniões agendadas.";
     }
 
+
     // Busca todos os participantes em paralelo
     const participantesPorReuniao = await Promise.all(
         reunioes.map(r =>
@@ -155,23 +167,33 @@ async function formatarListaReunioes(reunioes) {
                 reuniao: r._id,
                 conviteAceito: true,
                 pessoa: { $ne: r.organizador }
-            }).populate('pessoa', 'nome')
+            }).populate('pessoa', 'nome'),
         )
     );
 
+
     let mensagem = "*Suas reuniões agendadas:*\n\n";
 
-    reunioes.forEach((r, i) => {
-        const participantes = participantesPorReuniao[i];
 
-        const horarioInicio = dayjs.utc(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm");
-        const horarioFim = dayjs.utc(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm");
+    reunioes.forEach((r, i) => {
+        r.toObject(); // Converte o documento para objeto JavaScript convertendo as datas para o formato correto
+        console.log(r);
+        const participantes = participantesPorReuniao[i];
+        const horarioInicio = converteParaHorarioBrasilia(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm");
+        const horarioFim = converteParaHorarioBrasilia(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm");
 
         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
         mensagem += `   🕒 *Data:* ${horarioInicio}, ${horarioFim}\n`;
+        mensagem += `📣 *Organizador:* ${r.organizador.nome}\n`
 
-        if (participantes.length > 0) {
-            const nomes = participantes.map(p => p.pessoa.nome).join(', ');
+
+        const participantesFiltrados = participantes.filter(
+            p => p.pessoa._id.toString() !== r.organizador.toString()
+        )
+
+
+        if (participantesFiltrados.length > 0) {
+            const nomes = participantesFiltrados.map(p => p.pessoa.nome).join(', ');
             mensagem += `   👥 *Participantes confirmados:* ${nomes}\n\n`;
         } else {
             mensagem += "   👥 *Participantes:* Nenhum participante confirmado.\n\n";
@@ -180,31 +202,5 @@ async function formatarListaReunioes(reunioes) {
     console.log(mensagem);
     return mensagem.trim();
 }
-
-
-// function formatarListaReunioes(reunioes) {
-
-//     if (!reunioes || reunioes.length === 0) {
-//         return "Você não possui reuniões agendadas.";
-//     }
-//     let mensagem = "*Suas reuniões agendadas:*\n\n";
-//     reunioes.forEach(async (r, i) => {
-//         const participantes = await Participantes.find({ reuniao: r._id, 
-//             conviteAceito: true, 
-//             pessoa: { $ne: r.organizador } 
-//         });
-//         const horarioInicio = dayjs.utc(r.dataHoraInicio).format("DD/MM/YYYY, [Inicia às] HH:mm")
-//         const horarioFim = dayjs.utc(r.dataHoraFim).format("DD/MM/YYYY, [Finaliza às] HH:mm")
-
-//         mensagem += `*${i + 1}.* 📅 *Título:* ${r.titulo || "Sem título"}\n`;
-//         mensagem += `   🕒 *Data:* ${horarioInicio}, ${horarioFim}\n\n`;
-//         if (participantes.length > 0) {
-//             mensagem += `   👥 *Participantes:* ${participantes.map(p => p.pessoa.nome).join(', ')}\n\n`;
-//         } else {
-//             mensagem += "   👥 *Participantes:* Nenhum participante confirmado.\n\n";
-//         }
-//     });
-//     return mensagem.trim();
-// }
 
 export default listaReuniao;

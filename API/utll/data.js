@@ -24,7 +24,7 @@ export function converteParaHorarioUTC(dataISO) {
     } else {
         // Se não contém fuso, assume que é horário de Brasília (GMT-3) e soma 3h para UTC
       console.log(`Não contem fuso ${dataISO}`);
-        dt = dayjs.utc(dataISO);
+        dt = dayjs.utc(dataISO).add(3, 'hour');
     }
 
     return dt.isValid() ? dt.toDate() : null;
