@@ -38,8 +38,8 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
     const inicio = dayjs.utc(inicioRaw);
     const fim = dayjs.utc(fimRaw);
 
-    console.log('Inicio:', inicio);
-    console.log('Fim:', fim);
+    console.log('Inicio:', inicio.format());
+    console.log('Fim:', fim.format());
 
     const duracaoReuniao = fim.diff(inicio);
 
@@ -67,6 +67,8 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
 
     let reunioesAgendadas = await obterReunioesAgendadas(idsParticipantes, expedienteInicio.toDate(), expedienteFim.toDate());
 
+    console.log('Reuniões agendadas:', reunioesAgendadas);
+
     if (reunioesAgendadas.length > 0) {
         // if (expediente.inicio && expediente.fim) {
         //     const [horaInicio, minutoInicio] = expediente.inicio.split(":");
@@ -77,7 +79,7 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
         //     expedienteFim = new Date(fim);
         //     expedienteFim.setHours(parseInt(horaFim), parseInt(minutoFim), 0, 0);
         // }
-
+        console.log('Achei reuniões')
         if (expediente.inicio && expediente.fim) {
             const [horaInicio, minutoInicio] = expediente.inicio.split(":").map(Number);
             expedienteInicio = inicio.set('hour', horaInicio).set('minute', minutoInicio).set('second', 0).set('millisecond', 0);
@@ -85,7 +87,8 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
             const [horaFim, minutoFim] = expediente.fim.split(":").map(Number);
             expedienteFim = fim.set('hour', horaFim).set('minute', minutoFim).set('second', 0).set('millisecond', 0);
         }
-
+        console.log('Expediente Início:', expedienteInicio.format());
+        console.log('Expediente Fim:', expedienteFim.format());
         reunioesAgendadas = reunioesAgendadas.map((reuniao) => {
             return formatarReuniao(reuniao);
         });
@@ -97,7 +100,7 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
         //         (inicio <= r.dataHoraInicio && fim >= r.dataHoraFim)
         //     );
         // });
-
+        console.log('Reuniões agendadas formatadas:', reunioesAgendadas);
 
         const haConflito = reunioesAgendadas.some(r => {
             const inicioReuniao = dayjs.utc(r.dataHoraInicio);
