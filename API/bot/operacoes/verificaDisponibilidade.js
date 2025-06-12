@@ -168,6 +168,9 @@ async function obterReunioesAgendadas(idsParticipantes, inicio, fim) {
         project: { 'reuniao._id': 1, 'reuniao.dataHoraInicio': 1, 'reuniao.dataHoraFim': 1 },
     });
 
+    console.log('inicio:', inicio);
+    console.log('fim:', fim);
+
     const reunioesAgendadas = participantesReunioes
         .map((participante) => participante.reuniao)
         .filter((reuniao, index, self) => {
