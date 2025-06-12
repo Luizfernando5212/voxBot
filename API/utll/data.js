@@ -33,5 +33,5 @@ export function converteParaHorarioUTC(dataISO) {
 
 
 export function agoraBrasilia() {
-    return dayjs().tz("America/Sao_Paulo").toDate();
+    return dayjs().tz("America/Sao_Paulo").subtract(3, 'hour').toDate();
 }

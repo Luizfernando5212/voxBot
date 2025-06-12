@@ -187,8 +187,9 @@ async function updateHorarioReuniaoMongoDB(resultado, numeroTel, consulta) {
  * @returns {Object} - Objeto com as informações extraídas do texto
  */
 async function promptAlteracaoHorario(texto) {
-    let horarioBrasil = dayjs().tz("America/Sao_Paulo").toDate();
+    // let horarioBrasil = dayjs().tz("America/Sao_Paulo");
     // horarioBrasil = horarioBrasil.subtract(3, 'hour').toDate();
+    let horarioBrasil = agoraBrasilia();
 
     let responseFormat = zodResponseFormat(Evento, 'evento');
     const reuniao_alterada = await openai.beta.chat.completions.parse({
