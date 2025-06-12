@@ -28,13 +28,13 @@ const Evento = z.object({
 });
 
 
-async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=false) {
-    try{
+async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao = false) {
+    try {
         if (!payloadVerificaReuniao) {
             let resultado = await promptListarReuniaso(texto);
 
             console.log(resultado);
-            
+
             if (!resultado.indListaReuniao && !resultado.indHistoricoReuniao) {
                 console.log("Não deseja verificar reuniões.");
                 return false;
@@ -42,33 +42,41 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
 
             if (resultado.dataHoraInicio !== '') {
                 let dataHoraFim = dayjs.utc(resultado.dataHoraInicio).set('hour', 23).set('minute', 59).set('second', 59).toISOString();
-                
+
                 const reunioesParticipadas = await Participantes.find({
-                pessoa: consulta.pessoa._id,
-                conviteAceito: true // opcional, se quiser filtrar apenas quem confirmou presença
-                }).distinct('_id');
-                
+                    pessoa: consulta.pessoa._id,
+                    conviteAceito: true // opcional, se quiser filtrar apenas quem confirmou presença
+                }).distinct('reuniao');
+
+                console.log("Reuniões participadas:", reunioesParticipadas);
+
                 const reunioes_encontradas = await reuniao.find({
                     _id: { $in: reunioesParticipadas },
                     dataHoraInicio: { $gte: new Date(resultado.dataHoraInicio), $lte: new Date(dataHoraFim) },
                     status: 'Agendada',
                 })
-                .populate('organizador', 'nome')
-                .sort({ dataHoraInicio: 1 });
+                    .populate('organizador', 'nome')
+                    .sort({ dataHoraInicio: 1 });
                 const mensagem = await formatarListaReunioes(reunioes_encontradas);
                 await axios(textMessage(numeroTel, mensagem));
                 consulta.etapaFluxo = 'INICIAL';
                 consulta.reuniao = null;
                 await consulta.save();
                 return true;
-                
+
             } else if (resultado.indHistoricoReuniao) {
+                const reunioesParticipadas = await Participantes.find({
+                    pessoa: consulta.pessoa._id,
+                    conviteAceito: true // opcional, se quiser filtrar apenas quem confirmou presença
+                }).distinct('reuniao');
+
                 const reunioes_encontradas = await reuniao.find({
+                    _id: { $in: reunioesParticipadas },
                     status: 'Agendada',
-                    "organizador": consulta.pessoa._id
+                    // "organizador": consulta.pessoa._id
                 })
-                .populate('organizador', 'nome')
-                .sort({ dataHoraInicio: 1 });
+                    .populate('organizador', 'nome')
+                    .sort({ dataHoraInicio: 1 });
                 const mensagem = await formatarListaReunioes(reunioes_encontradas);
                 await axios(textMessage(numeroTel, mensagem));
                 consulta.etapaFluxo = 'INICIAL';
@@ -78,21 +86,28 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
 
             } else {
                 var now = agoraBrasilia();
+                const reunioesParticipadas = await Participantes.find({
+                    pessoa: consulta.pessoa._id,
+                    conviteAceito: true // opcional, se quiser filtrar apenas quem confirmou presença
+                }).distinct('reuniao');
+
+                console.log("Reuniões participadas:", reunioesParticipadas);
 
                 const reunioes_encontradas = await reuniao.find({
+                    _id: { $in: reunioesParticipadas },
                     dataHoraInicio: { $gte: now },
                     status: 'Agendada',
-                    "organizador": consulta.pessoa._id
+                    // "organizador": consulta.pessoa._id
                 })
-                .populate('organizador', 'nome')
-                .sort({ dataHoraInicio: 1 });
-                    if (reunioes_encontradas.length === 0) {
-                        await axios(textMessage(numeroTel, "Você não possui reuniões agendadas."));
-                        consulta.etapaFluxo = 'INICIAL';
-                        consulta.reuniao = null;
-                        await consulta.save();
-                        return true;
-                    }
+                    .populate('organizador', 'nome')
+                    .sort({ dataHoraInicio: 1 });
+                if (reunioes_encontradas.length === 0) {
+                    await axios(textMessage(numeroTel, "Você não possui reuniões agendadas."));
+                    consulta.etapaFluxo = 'INICIAL';
+                    consulta.reuniao = null;
+                    await consulta.save();
+                    return true;
+                }
                 const mensagem = await formatarListaReunioes(reunioes_encontradas);
                 await axios(textMessage(numeroTel, mensagem));
                 consulta.etapaFluxo = 'INICIAL';
@@ -104,13 +119,18 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
         } else {
             var now = agoraBrasilia();
 
+            const reunioesParticipadas = await Participantes.find({
+                pessoa: consulta.pessoa._id,
+                conviteAceito: true // opcional, se quiser filtrar apenas quem confirmou presença
+                }).distinct('reuniao');
             const reunioes_encontradas = await reuniao.find({
+                _id: { $in: reunioesParticipadas },
                 dataHoraInicio: { $gte: now },
                 status: 'Agendada',
-                "organizador": consulta.pessoa._id
+                // "organizador": consulta.pessoa._id
             })
-            .populate('organizador', 'nome')
-            .sort({ dataHoraInicio: 1 });
+                .populate('organizador', 'nome')
+                .sort({ dataHoraInicio: 1 });
 
             if (reunioes_encontradas.length === 0) {
                 await axios(textMessage(numeroTel, "Você não possui reuniões agendadas."));
@@ -127,7 +147,7 @@ async function listaReuniao(consulta, numeroTel, texto, payloadVerificaReuniao=f
             await consulta.save();
             return true;
         }
-        
+
     } catch (error) {
         console.error('Erro ao processar a solicitação de reunião:', error);
     }
@@ -144,15 +164,17 @@ async function promptListarReuniaso(texto) {
     const reuniao_cancelada = await openai.beta.chat.completions.parse({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
-            { role: 'system', content: 'Verifique se o usuário deseja listar/verificar suas respectivas reuniões, não produza informações, hoje é dia ' + new Date() +
-            ' dataHoraInicio deve ser a data e hora do dia em que o usuário deseja listar as reuniões, caso ele não forneça data, não preencha esse campo.' +
-            ' indListaReuniao diz se o usuário está querendo listar/verificar suas reuniões.' +
-            ' indHistoricoReuniao diz se o usuário está querendo listar/verificar todas as reuniões, ou seja, o histórico completo.' },
+            {
+                role: 'system', content: 'Verifique se o usuário deseja listar/verificar suas respectivas reuniões, não produza informações, hoje é dia ' + new Date() +
+                    ' dataHoraInicio deve ser a data e hora do dia em que o usuário deseja listar as reuniões, caso ele não forneça data, não preencha esse campo.' +
+                    ' indListaReuniao diz se o usuário está querendo listar/verificar suas reuniões.' +
+                    ' indHistoricoReuniao diz se o usuário está querendo listar/verificar todas as reuniões, ou seja, o histórico completo.'
+            },
             { role: 'user', content: texto },
         ],
         response_format: responseFormat,
     });
-    
+
     return reuniao_cancelada.choices[0].message.parsed;
 }
 
