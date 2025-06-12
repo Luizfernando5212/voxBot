@@ -5,12 +5,6 @@ import findWithJoinCascade from '../../utll/mongoQuery.js';
 import { format } from 'date-fns-tz';
 import { startOfDay, endOfDay } from 'date-fns';
 import { converteParaHorarioBrasilia } from '../../utll/data.js';
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc.js";
-import timezone from "dayjs/plugin/timezone.js";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 async function isFeriado(date, empresaId) {
     const data = converteParaHorarioBrasilia(date);
@@ -92,10 +86,14 @@ async function haConflitoHorario(consulta, idReuniao, callback) {
 
 function formatarReuniao(reuniao) {
     if (reuniao.dataHoraInicio) {
-        reuniao.dataHoraInicio = dayjs(reuniao.dataHoraInicio);
+        reuniao.dataHoraInicio = format(new Date(reuniao.dataHoraInicio), 'yyyy-MM-dd HH:mm:ssXXX', {
+            timeZone: 'America/Sao_Paulo'
+        });
     }
     if (reuniao.dataHoraFim) {
-        reuniao.dataHoraFim = dayjs(reuniao.dataHoraFim)
+        reuniao.dataHoraFim = format(new Date(reuniao.dataHoraFim), 'yyyy-MM-dd HH:mm:ssXXX', {
+            timeZone: 'America/Sao_Paulo'
+        });
     }
 
     return reuniao;
@@ -114,7 +112,7 @@ async function obterReunioesAgendadas(idsParticipantes, inicio, fim) {
         ],
         conditions: [
             { pessoa: { $in: idsParticipantes } },
-            { 'reuniao.dataHoraInicio': { $gt: inicio, $lt: fim } },
+            { 'reuniao.dataHoraInicio': { $gte: inicio, $lt: fim } },
             { 'reuniao.status': 'Agendada' },
         ],
         convertDates: ['reuniao.dataHoraInicio', 'reuniao.dataHoraFim'],
