@@ -2,7 +2,7 @@ import Empresa from '../model/empresa.js';
 import Setor from '../model/setor.js';
 import Pessoa from '../model/pessoa.js';
 import Telefone from '../model/telefone.js';
-
+import Feriado from '../model/feriado.js';
 
 export default {
     async create(req, res) {
@@ -45,11 +45,11 @@ export default {
             return res.status(400).json({ error: 'Error fetching Empresa setores' });
         }
     },
-    readFeriado(req, res) {
+    async readFeriado(req, res) {
         try {
             const id = req.user.id || req.params.id; // Use user ID from token or ID from params
             // Assuming you have a Feriado model to fetch holidays
-            const feriados = Feriado.find({ empresa: id });
+            const feriados = await Feriado.find({ empresa: id });
             if (!feriados) {
                 return res.status(404).json({ error: 'Feriados not found for this Empresa' });
             }

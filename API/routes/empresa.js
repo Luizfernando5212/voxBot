@@ -11,7 +11,7 @@ router.get('/', empresaController.read);
 router.get('/:id', auth, empresaController.readOne);
 router.get('/:id/setor', auth, empresaController.readSetor);
 router.get('/:id/funcionario', auth, empresaController.readFuncionarios);
-router.get('/:id/feriado', auth, empresaController.readFuncionarios);
+router.get('/:id/feriado', auth, empresaController.readFeriado);
 router.put('/:id', empresaController.update);
 router.delete('/:id', empresaController.delete);
 
